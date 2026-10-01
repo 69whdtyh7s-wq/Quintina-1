@@ -6737,7 +6737,30 @@ function buildHistorialTable() {
     pauseTimerOnFinish();
     clearBoardOnly(true);
     updateUndoFinishBtn();
+    suppressKeyboardAfterFinish();
     showTablaPage();
+  }
+
+  // Al tocar "Terminar" → "Aceptar", el tablero desaparece y aparece la
+  // tabla de Campeonatos justo debajo del dedo: en el iPad eso a veces hace
+  // que el toque "se filtre" a una casilla editable de la tabla (que usa
+  // contenteditable) y abra el teclado sin que el usuario lo pida. Esto
+  // quita el foco de inmediato y evita que una casilla lo reciba durante
+  // el instante en que se reconstruye la tabla.
+  function suppressKeyboardAfterFinish() {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    const onFocusIn = function(e) {
+      const t = e.target;
+      if (t && t.classList && t.classList.contains('hist-editable')) {
+        t.blur();
+      }
+    };
+    document.addEventListener('focusin', onFocusIn, true);
+    setTimeout(function() {
+      document.removeEventListener('focusin', onFocusIn, true);
+    }, 600);
   }
 
   const MATCH_POINTS_BOX_KEY = 'quintina_match_points_box';
