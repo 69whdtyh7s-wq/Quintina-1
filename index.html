@@ -6125,6 +6125,8 @@
     { g:{pts:60,pg:53,racha:0,dif:-18,v:473,d:8,q:5}, m:{pts:78,pg:65,racha:2,dif:18,v:483,d:8,q:11}, x:2, jugados:120, empezo:'01/09/2025', termino:'08/04/26', duracion:'0,60 años' }
   ];
 
+  const FROZEN_COUNT = 14; // filas 1 a 14: historia cerrada, sus cifras siempre vienen del código
+
   let HISTORIAL = JSON.parse(JSON.stringify(HISTORIAL_INITIAL));
   let currentRowIndex = HISTORIAL.length - 1;
   try {
@@ -6142,6 +6144,15 @@
       }
     }
   } catch(e) {}
+  // Las filas congeladas (1 a 14) son historia cerrada y están bloqueadas
+  // en la pantalla: sus cifras se toman siempre del código (HISTORIAL_INITIAL)
+  // y nunca de lo que haya quedado guardado en el dispositivo, para que una
+  // corrección hecha en el código se vea reflejada en todos los dispositivos
+  // en cuanto se actualice la app, sin que datos viejos del almacenamiento
+  // local la tapen.
+  for (let fi = 0; fi < FROZEN_COUNT && fi < HISTORIAL_INITIAL.length; fi++) {
+    HISTORIAL[fi] = JSON.parse(JSON.stringify(HISTORIAL_INITIAL[fi]));
+  }
   try { if (HISTORIAL[currentRowIndex]) { HISTORIAL[currentRowIndex].termino = getFormattedTodayDate(); } } catch(e) {}
 
   function saveRow15State() {
@@ -6243,8 +6254,6 @@ function buildHistorialTable() {
     let totX = 0, totJugados = 0;
     let champWinsG = 0;
     let champWinsM = 0;
-
-    const FROZEN_COUNT = 14; // filas 1 a 14 congeladas
 
     HISTORIAL.forEach(function(row, idx) {
       const isFrozen = idx < FROZEN_COUNT; // 0-13 = filas 1-14
