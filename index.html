@@ -1410,6 +1410,7 @@
     background: #dad6c6;
   }
   .mpb-col.is-winner { border-color: var(--green-ink); background: var(--green); color: var(--green-ink); }
+  .mpb-col.is-loser { border-color: var(--red-ink); background: var(--red); color: var(--red-ink); }
   .mpb-player { font-weight: 900; font-size: 0.95rem; margin-bottom: 3px; }
   .mpb-list { list-style: none; margin: 0 0 4px; padding: 0; font-size: 0.85rem; font-weight: 600; min-height: 1.2em; }
   .mpb-list li { line-height: 1.35; }
@@ -6748,8 +6749,14 @@ function buildHistorialTable() {
     renderMatchPointsCol('mpbListM', 'mpbTotalM', breakdownM);
     const colG = document.getElementById('mpbTotalG').closest('.mpb-col');
     const colM = document.getElementById('mpbTotalM').closest('.mpb-col');
-    if (colG) colG.classList.toggle('is-winner', gameWinner === 'G');
-    if (colM) colM.classList.toggle('is-winner', gameWinner === 'M');
+    if (colG) {
+      colG.classList.toggle('is-winner', gameWinner === 'G');
+      colG.classList.toggle('is-loser', gameWinner === 'M');
+    }
+    if (colM) {
+      colM.classList.toggle('is-winner', gameWinner === 'M');
+      colM.classList.toggle('is-loser', gameWinner === 'G');
+    }
     box.classList.remove('hidden');
     const tablaPageEl = document.getElementById('tablaPage');
     if (tablaPageEl) tablaPageEl.classList.add('has-points-box');
