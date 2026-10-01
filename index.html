@@ -2856,6 +2856,7 @@
   let historyStack = [];
   let redoStack = [];
   let finishSnapshot = null;
+  let newChampSnapshot = null;
   let timerElapsedMs = 0;
   let timerRunning = false;
   let timerStarted = false;
@@ -6125,7 +6126,7 @@
     { g:{pts:60,pg:53,racha:0,dif:-18,v:473,d:8,q:5}, m:{pts:78,pg:65,racha:2,dif:18,v:483,d:8,q:11}, x:2, jugados:120, empezo:'01/09/2025', termino:'08/04/26', duracion:'0,60 años' }
   ];
 
-  const FROZEN_COUNT = 14; // filas 1 a 14: historia cerrada (bloqueada para edición)
+  const FROZEN_COUNT = 14; // filas 1 a 14: ya verificadas y "horneadas" en el código
 
   let HISTORIAL = JSON.parse(JSON.stringify(HISTORIAL_INITIAL));
   let currentRowIndex = HISTORIAL.length - 1;
@@ -6160,7 +6161,14 @@
   }
 
   function startNewChampionship() {
-    showConfirmModal('¿Cerrar el campeonato de la fila ' + (currentRowIndex + 1) + ' y empezar uno nuevo en la fila ' + (currentRowIndex + 2) + '? La fila ' + (currentRowIndex + 1) + ' quedará congelada y no se podrá editar más.', function() {
+    showConfirmModal('¿Cerrar el campeonato de la fila ' + (currentRowIndex + 1) + ' y empezar uno nuevo en la fila ' + (currentRowIndex + 2) + '? La fila ' + (currentRowIndex + 1) + ' quedará bloqueada y no se podrá editar más (solo se puede deshacer con el botón "Deshacer").', function() {
+      newChampSnapshot = {
+        historialLength: HISTORIAL.length,
+        oldRowIndex: currentRowIndex,
+        oldRow: JSON.parse(JSON.stringify(HISTORIAL[currentRowIndex]))
+      };
+      finishSnapshot = null; // una sola acción deshacible a la vez
+
       const todayStr = getFormattedTodayDate();
       const oldRow = HISTORIAL[currentRowIndex];
       oldRow.termino = todayStr;
@@ -6179,6 +6187,7 @@
 
       saveRow15State();
       buildHistorialTable();
+      updateUndoFinishBtn();
     });
   }
 
@@ -6254,10 +6263,10 @@ function buildHistorialTable() {
     let champWinsM = 0;
 
     HISTORIAL.forEach(function(row, idx) {
-      const isFrozen = idx < FROZEN_COUNT; // 0-13 = filas 1-14
+      const isFrozen = idx < currentRowIndex; // cualquier campeonato ya cerrado queda bloqueado
       const isCurrent = (idx === currentRowIndex);
 
-      // Solo la fila 15 (actual) recalcula puntos con la formula correcta. Las congeladas mantienen lo que tienen guardado.
+      // Solo la fila actual recalcula puntos con la formula correcta. Las congeladas mantienen lo que tienen guardado.
       if (!isFrozen) {
         if (!row._manualPtsG) {
           row.g.pts = (row.g.pg || 0) + (row.g.q || 0) + Math.floor((row.g.d || 0) / 3);
@@ -6501,7 +6510,7 @@ function buildHistorialTable() {
       const oldQ = (field === 'q') ? (target.q || 0) : null;
       target[field] = val;
       // Solo la fila actual recalcula los puntos; las filas anteriores conservan los que tienen
-      if (rowIdx >= 14 && (field === 'pg' || field === 'q' || field === 'd')) {
+      if (rowIdx === currentRowIndex && (field === 'pg' || field === 'q' || field === 'd')) {
         if (player === 'g' && !row._manualPtsG) row.g.pts = (row.g.pg||0)+(row.g.q||0)+Math.floor((row.g.d||0)/3);
         if (player === 'm' && !row._manualPtsM) row.m.pts = (row.m.pg||0)+(row.m.q||0)+Math.floor((row.m.d||0)/3);
       }
@@ -6640,6 +6649,7 @@ function buildHistorialTable() {
   }
 
   function finishCurrentGameAndAccumulate() {
+    newChampSnapshot = null; // una sola acción deshacible a la vez
     finishSnapshot = {
       boardState: JSON.parse(JSON.stringify(getFullState())),
       rowIndex: currentRowIndex,
@@ -6872,7 +6882,26 @@ function buildHistorialTable() {
 
   function updateUndoFinishBtn() {
     const btn = document.getElementById('ajustesUndoFinish');
-    if (btn) btn.disabled = !finishSnapshot;
+    if (btn) btn.disabled = !finishSnapshot && !newChampSnapshot;
+  }
+
+  function undoLastAction() {
+    if (finishSnapshot) { undoFinishGame(); return; }
+    if (newChampSnapshot) { undoNewChampionship(); return; }
+  }
+
+  function undoNewChampionship() {
+    if (!newChampSnapshot) return;
+    showConfirmModal('¿Deshacer el nuevo campeonato? La fila que acababa de quedar bloqueada vuelve a quedar como el campeonato en curso, editable.', function() {
+      const snap = newChampSnapshot;
+      newChampSnapshot = null;
+      HISTORIAL.length = snap.historialLength;
+      HISTORIAL[snap.oldRowIndex] = snap.oldRow;
+      currentRowIndex = snap.oldRowIndex;
+      saveRow15State();
+      buildHistorialTable();
+      updateUndoFinishBtn();
+    });
   }
 
   function undoFinishGame() {
@@ -7121,7 +7150,7 @@ function buildHistorialTable() {
   const ajustesUndoFinishBtn = document.getElementById('ajustesUndoFinish');
   if (ajustesUndoFinishBtn) ajustesUndoFinishBtn.addEventListener('click', function() {
     ajustesModalEl.classList.add('hidden');
-    undoFinishGame();
+    undoLastAction();
   });
   const ajustesClearBoardBtn = document.getElementById('ajustesClearBoard');
   if (ajustesClearBoardBtn) ajustesClearBoardBtn.addEventListener('click', function() {
