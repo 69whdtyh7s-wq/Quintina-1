@@ -6185,6 +6185,7 @@
     const todayStr = getFormattedTodayDate();
     const oldRow = HISTORIAL[currentRowIndex];
     oldRow.termino = todayStr;
+    oldRow.duracion = computeDuracionAnios(oldRow.empezo, todayStr);
 
     const newRow = {
       g: { pts: 0, pg: 0, racha: 0, dif: 0, v: 0, d: 0, q: 0 },
@@ -6239,7 +6240,28 @@
     if (n === null || n === undefined) return '';
     return (n > 0 ? '+' + n : String(n));
   }
-  
+
+  function parseFechaToDate(str) {
+    if (!str) return null;
+    const parts = String(str).trim().split('/');
+    if (parts.length !== 3) return null;
+    const dd = parseInt(parts[0], 10);
+    const mm = parseInt(parts[1], 10);
+    let yy = parts[2];
+    const yyyy = (yy.length === 4) ? parseInt(yy, 10) : (2000 + parseInt(yy, 10));
+    if (isNaN(dd) || isNaN(mm) || isNaN(yyyy)) return null;
+    return new Date(yyyy, mm - 1, dd);
+  }
+
+  function computeDuracionAnios(empezoStr, terminoStr) {
+    const d1 = parseFechaToDate(empezoStr);
+    const d2 = parseFechaToDate(terminoStr);
+    if (!d1 || !d2) return '';
+    const diffDays = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
+    const anios = diffDays / 365.25;
+    return anios.toFixed(2).replace('.', ',') + ' años';
+  }
+
 function buildHistorialTable() {
     const t = document.getElementById('historialTable');
     t.innerHTML = '';
@@ -6340,6 +6362,7 @@ function buildHistorialTable() {
       const empezoFmt = formatShortDate(row.empezo);
       const terminoRaw = isCurrent ? getFormattedTodayDate() : row.termino;
       const terminoFmt = formatShortDate(terminoRaw);
+      const duracionDisplay = isCurrent ? computeDuracionAnios(row.empezo, terminoRaw) : row.duracion;
       const emptyBarCell = '<td class="col-bar" style="width:6px;min-width:6px;max-width:6px;padding:0;border:none;background:transparent;"></td>';
 
       function cellHtml(val, cls) {
@@ -6375,7 +6398,7 @@ function buildHistorialTable() {
         editableRowCell(row.jugados, 'jugados', 'col-jugados') +
         '<td class="col-fechas">' + empezoFmt + '</td>' +
         '<td class="col-fechas">' + terminoFmt + '</td>' +
-        '<td class="col-fechas">' + row.duracion + '</td>';
+        '<td class="col-fechas">' + duracionDisplay + '</td>';
       t.appendChild(tr);
     });
 
