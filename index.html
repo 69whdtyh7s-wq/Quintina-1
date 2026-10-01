@@ -2484,6 +2484,25 @@
      queda dentro de html[data-theme="moderno"] para no afectar a los
      demás estilos (Clásico/Bosque/Océano). */
   html[data-theme="moderno"] body { font-family: 'Plus Jakarta Sans', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+  /* Las tipografías propias de cada estilo (Quicksand, Baloo 2, Plus Jakarta
+     Sans) tienen proporciones distintas a la del sistema: al mismo tamaño en
+     rem/px, unas se ven más grandes o más chatas que otras y eso hace que el
+     tablero y las tablas "cambien de tamaño" al cambiar de estilo. Para que
+     las tablas midan siempre lo mismo pase lo que pase con el estilo, se
+     fuerza en ellas la tipografía del sistema (igual que en Clásico) en los
+     tres estilos con tipografía propia. */
+  html[data-theme="bosque"] table.quintina,
+  html[data-theme="bosque"] table.historial-table,
+  html[data-theme="bosque"] #recordsPage,
+  html[data-theme="oceano"] table.quintina,
+  html[data-theme="oceano"] table.historial-table,
+  html[data-theme="oceano"] #recordsPage,
+  html[data-theme="moderno"] table.quintina,
+  html[data-theme="moderno"] table.historial-table,
+  html[data-theme="moderno"] #recordsPage {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
   html[data-theme="moderno"] table.quintina { border-width: 2px; box-shadow: 0 6px 16px rgba(22,26,38,0.10), 0 2px 6px rgba(22,26,38,0.06); }
   html[data-theme="moderno"] table.quintina th,
   html[data-theme="moderno"] table.quintina td { border-color: #e2e8f0; }
