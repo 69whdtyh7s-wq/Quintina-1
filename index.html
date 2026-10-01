@@ -1275,6 +1275,20 @@
     text-align: center;
     white-space: nowrap;
   }
+  .new-champ-undo-btn {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #8a877d;
+    background: transparent;
+    border: 1px solid #c7c3b4;
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin-left: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .new-champ-undo-btn:active { background: #e8e3cf; }
   /* Fuerza que toda la fila sea papel, sin franja oscura */
   table.historial-table tr.add-champ-row td,
   table.historial-table tr.add-champ-row td.col-x-cell {
@@ -6368,9 +6382,10 @@ function buildHistorialTable() {
     const addRowTr = document.createElement('tr');
     addRowTr.className = 'add-champ-row';
     const nextNum = HISTORIAL.length + 1;
+    const undoNewChampHtml = newChampSnapshot ? ' <button type="button" class="new-champ-undo-btn" onclick="undoNewChampionship()">Deshacer nuevo campeonato</button>' : '';
     addRowTr.innerHTML =
       '<td class="pos new-champ-pos"><button class="new-champ-circle" onclick="startNewChampionship()" title="Nuevo campeonato">+</button></td>' +
-      '<td colspan="16" class="new-champ-label-cell"><span class="new-champ-label-text">Nuevo campeonato — fila ' + nextNum + '</span></td>' +
+      '<td colspan="16" class="new-champ-label-cell"><span class="new-champ-label-text">Nuevo campeonato — fila ' + nextNum + '</span>' + undoNewChampHtml + '</td>' +
       '<td colspan="3" class="new-champ-label-cell col-fechas"></td>';
     t.appendChild(addRowTr);
 
