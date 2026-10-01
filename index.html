@@ -6161,34 +6161,32 @@
   }
 
   function startNewChampionship() {
-    showConfirmModal('¿Cerrar el campeonato de la fila ' + (currentRowIndex + 1) + ' y empezar uno nuevo en la fila ' + (currentRowIndex + 2) + '? La fila ' + (currentRowIndex + 1) + ' quedará bloqueada y no se podrá editar más (solo se puede deshacer con el botón "Deshacer").', function() {
-      newChampSnapshot = {
-        historialLength: HISTORIAL.length,
-        oldRowIndex: currentRowIndex,
-        oldRow: JSON.parse(JSON.stringify(HISTORIAL[currentRowIndex]))
-      };
-      finishSnapshot = null; // una sola acción deshacible a la vez
+    newChampSnapshot = {
+      historialLength: HISTORIAL.length,
+      oldRowIndex: currentRowIndex,
+      oldRow: JSON.parse(JSON.stringify(HISTORIAL[currentRowIndex]))
+    };
+    finishSnapshot = null; // una sola acción deshacible a la vez
 
-      const todayStr = getFormattedTodayDate();
-      const oldRow = HISTORIAL[currentRowIndex];
-      oldRow.termino = todayStr;
+    const todayStr = getFormattedTodayDate();
+    const oldRow = HISTORIAL[currentRowIndex];
+    oldRow.termino = todayStr;
 
-      const newRow = {
-        g: { pts: 0, pg: 0, racha: 0, dif: 0, v: 0, d: 0, q: 0 },
-        m: { pts: 0, pg: 0, racha: 0, dif: 0, v: 0, d: 0, q: 0 },
-        x: 0,
-        jugados: 0,
-        empezo: todayStr,
-        termino: '',
-        duracion: ''
-      };
-      HISTORIAL.push(newRow);
-      currentRowIndex = HISTORIAL.length - 1;
+    const newRow = {
+      g: { pts: 0, pg: 0, racha: 0, dif: 0, v: 0, d: 0, q: 0 },
+      m: { pts: 0, pg: 0, racha: 0, dif: 0, v: 0, d: 0, q: 0 },
+      x: 0,
+      jugados: 0,
+      empezo: todayStr,
+      termino: '',
+      duracion: ''
+    };
+    HISTORIAL.push(newRow);
+    currentRowIndex = HISTORIAL.length - 1;
 
-      saveRow15State();
-      buildHistorialTable();
-      updateUndoFinishBtn();
-    });
+    saveRow15State();
+    buildHistorialTable();
+    updateUndoFinishBtn();
   }
 
   function setWinLoseTieClasses(elG, elM, valG, valM) {
