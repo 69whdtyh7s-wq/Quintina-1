@@ -1388,6 +1388,7 @@
      Aparece al presionar "Terminar" y queda visible hasta el primer tiro
      de la partida siguiente. */
   .match-points-box {
+    position: relative;
     max-width: 460px;
     margin: 0 auto 14px;
     border: 3px solid var(--ink);
@@ -1399,7 +1400,26 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   }
   .match-points-box.hidden { display: none; }
-  .mpb-title { font-weight: 900; font-size: 1.15rem; margin-bottom: 8px; }
+  .mpb-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mpb-close:active { transform: scale(0.92); }
+  .mpb-title { font-weight: 900; font-size: 1.15rem; margin: 0 28px 8px; }
   .mpb-cols { display: flex; gap: 14px; justify-content: center; }
   .mpb-col {
     flex: 1;
@@ -2127,7 +2147,8 @@
       max-width: 400px;
       padding: 7px 12px 8px;
     }
-    #tablaPage .mpb-title { font-size: 1rem; margin-bottom: 5px; }
+    #tablaPage .mpb-title { font-size: 1rem; margin: 0 24px 5px; }
+    #tablaPage .mpb-close { width: 22px; height: 22px; font-size: 0.95rem; top: 5px; right: 6px; }
     #tablaPage .mpb-cols { gap: 10px; }
     #tablaPage .mpb-col { padding: 5px 6px 6px; }
     #tablaPage .mpb-player { font-size: 0.82rem; margin-bottom: 2px; }
@@ -2573,6 +2594,7 @@
   </div>
   </div>
   <div class="match-points-box hidden" id="matchPointsBox">
+    <button type="button" class="mpb-close" id="mpbCloseBtn" title="Quitar" aria-label="Quitar cuadro de puntos">×</button>
     <div class="mpb-title" id="mpbTitle"></div>
     <div class="mpb-cols">
       <div class="mpb-col">
@@ -6895,6 +6917,8 @@ function buildHistorialTable() {
   buildRecordsPage();
   updateTimerToggleBtn();
   loadMatchPointsBoxOnInit();
+  const mpbCloseBtnEl = document.getElementById('mpbCloseBtn');
+  if (mpbCloseBtnEl) mpbCloseBtnEl.addEventListener('click', function() { hideMatchPointsBox(); });
 
   document.getElementById('timerToggleBtn').addEventListener('click', toggleMatchTimer);
   document.getElementById('timerResetBtn').addEventListener('click', function() {
