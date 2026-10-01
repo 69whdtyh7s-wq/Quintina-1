@@ -6108,20 +6108,20 @@
   document.getElementById('bkClose').addEventListener('click', closeBackup);
 
   const HISTORIAL_INITIAL = [
-    { g:{pts:96,pg:81,racha:0,dif:-4,v:null,d:4,q:10}, m:{pts:100,pg:89,racha:0,dif:4,v:null,d:4,q:7}, x:4, jugados:174, empezo:'29/04/12', termino:'12/05/13', duracion:'1,04 años' },
-    { g:{pts:86,pg:74,racha:0,dif:-14,v:null,d:3,q:9}, m:{pts:100,pg:85,racha:0,dif:14,v:null,d:7,q:8}, x:3, jugados:162, empezo:'12/05/13', termino:'21/09/13', duracion:'0,36 años' },
-    { g:{pts:100,pg:83,racha:0,dif:20,v:null,d:5,q:12}, m:{pts:80,pg:67,racha:0,dif:-20,v:null,d:5,q:8}, x:4, jugados:154, empezo:'21/09/13', termino:'22/02/14', duracion:'0,42 años' },
-    { g:{pts:98,pg:83,racha:0,dif:-2,v:null,d:5,q:10}, m:{pts:100,pg:89,racha:0,dif:2,v:null,d:6,q:5}, x:3, jugados:175, empezo:'22/02/14', termino:'02/11/14', duracion:'0,69 años' },
-    { g:{pts:100,pg:79,racha:0,dif:31,v:null,d:8,q:13}, m:{pts:69,pg:62,racha:0,dif:-31,v:null,d:3,q:4}, x:6, jugados:147, empezo:'02/11/14', termino:'17/11/15', duracion:'1,04 años' },
-    { g:{pts:94,pg:78,racha:0,dif:-6,v:null,d:4,q:12}, m:{pts:100,pg:88,racha:0,dif:6,v:null,d:5,q:7}, x:3, jugados:169, empezo:'17/11/15', termino:'29/01/18', duracion:'2,20 años' },
-    { g:{pts:100,pg:88,racha:0,dif:10,v:null,d:4,q:8}, m:{pts:90,pg:78,racha:0,dif:-10,v:null,d:4,q:8}, x:4, jugados:170, empezo:'29/01/18', termino:'06/02/19', duracion:'1,02 años' },
-    { g:{pts:99,pg:78,racha:0,dif:-2,v:null,d:6,q:15}, m:{pts:101,pg:88,racha:0,dif:2,v:null,d:5,q:8}, x:1, jugados:167, empezo:'06/02/19', termino:'30/12/19', duracion:'0,90 años' },
-    { g:{pts:100,pg:84,racha:0,dif:13,v:null,d:8,q:8}, m:{pts:87,pg:74,racha:0,dif:-13,v:null,d:3,q:10}, x:4, jugados:162, empezo:'03/02/20', termino:'24/10/20', duracion:'0,73 años' },
-    { g:{pts:92,pg:83,racha:0,dif:-8,v:234,d:6,q:3}, m:{pts:100,pg:79,racha:0,dif:8,v:232,d:6,q:15}, x:2, jugados:164, empezo:'19/11/20', termino:'11/12/21', duracion:'1,06 años' },
-    { g:{pts:86,pg:71,racha:0,dif:-14,v:655,d:8,q:7}, m:{pts:100,pg:87,racha:0,dif:14,v:704,d:4,q:9}, x:8, jugados:166, empezo:'11/12/21', termino:'07/03/23', duracion:'1,24 años' },
-    { g:{pts:100,pg:89,racha:0,dif:5,v:696,d:6,q:5}, m:{pts:95,pg:79,racha:0,dif:-5,v:685,d:7,q:9}, x:3, jugados:171, empezo:'07/03/23', termino:'09/01/24', duracion:'0,84 años' },
-    { g:{pts:92,pg:86,racha:0,dif:9,v:711,d:8,q:7}, m:{pts:101,pg:80,racha:0,dif:-9,v:710,d:7,q:5}, x:3, jugados:169, empezo:'15/01/2024', termino:'02/11/24', duracion:'0,80 años' },
-    { g:{pts:100,pg:83,racha:0,dif:-4,v:699,d:6,q:7}, m:{pts:96,pg:86,racha:0,dif:4,v:685,d:5,q:9}, x:5, jugados:174, empezo:'02/11/2024', termino:'01/09/25', duracion:'0,83 años' },
+    { g:{pts:96,pg:81,racha:0,dif:-4,v:null,d:13,q:10}, m:{pts:100,pg:89,racha:0,dif:4,v:null,d:14,q:7}, x:4, jugados:174, empezo:'29/04/12', termino:'12/05/13', duracion:'1,04 años' },
+    { g:{pts:86,pg:74,racha:0,dif:-14,v:null,d:10,q:9}, m:{pts:100,pg:85,racha:0,dif:14,v:null,d:23,q:8}, x:3, jugados:162, empezo:'12/05/13', termino:'21/09/13', duracion:'0,36 años' },
+    { g:{pts:100,pg:83,racha:0,dif:20,v:null,d:15,q:12}, m:{pts:80,pg:67,racha:0,dif:-20,v:null,d:15,q:8}, x:4, jugados:154, empezo:'21/09/13', termino:'22/02/14', duracion:'0,42 años' },
+    { g:{pts:98,pg:83,racha:0,dif:-2,v:null,d:17,q:10}, m:{pts:100,pg:89,racha:0,dif:2,v:null,d:19,q:5}, x:3, jugados:175, empezo:'22/02/14', termino:'02/11/14', duracion:'0,69 años' },
+    { g:{pts:100,pg:79,racha:0,dif:31,v:null,d:26,q:13}, m:{pts:69,pg:62,racha:0,dif:-31,v:null,d:10,q:4}, x:6, jugados:147, empezo:'02/11/14', termino:'17/11/15', duracion:'1,04 años' },
+    { g:{pts:94,pg:78,racha:0,dif:-6,v:null,d:14,q:12}, m:{pts:100,pg:88,racha:0,dif:6,v:null,d:17,q:7}, x:3, jugados:169, empezo:'17/11/15', termino:'29/01/18', duracion:'2,20 años' },
+    { g:{pts:100,pg:88,racha:0,dif:10,v:null,d:14,q:8}, m:{pts:90,pg:78,racha:0,dif:-10,v:null,d:12,q:8}, x:4, jugados:170, empezo:'29/01/18', termino:'06/02/19', duracion:'1,02 años' },
+    { g:{pts:99,pg:78,racha:0,dif:-2,v:null,d:20,q:15}, m:{pts:101,pg:88,racha:0,dif:2,v:null,d:15,q:8}, x:1, jugados:167, empezo:'06/02/19', termino:'30/12/19', duracion:'0,90 años' },
+    { g:{pts:100,pg:84,racha:0,dif:13,v:null,d:24,q:8}, m:{pts:87,pg:74,racha:0,dif:-13,v:null,d:11,q:10}, x:4, jugados:162, empezo:'03/02/20', termino:'24/10/20', duracion:'0,73 años' },
+    { g:{pts:92,pg:83,racha:0,dif:-8,v:234,d:20,q:3}, m:{pts:100,pg:79,racha:0,dif:8,v:232,d:19,q:15}, x:2, jugados:164, empezo:'19/11/20', termino:'11/12/21', duracion:'1,06 años' },
+    { g:{pts:86,pg:71,racha:0,dif:-14,v:655,d:25,q:7}, m:{pts:100,pg:87,racha:0,dif:14,v:704,d:13,q:9}, x:8, jugados:166, empezo:'11/12/21', termino:'07/03/23', duracion:'1,24 años' },
+    { g:{pts:100,pg:89,racha:0,dif:5,v:696,d:20,q:5}, m:{pts:95,pg:79,racha:0,dif:-5,v:685,d:23,q:9}, x:3, jugados:171, empezo:'07/03/23', termino:'09/01/24', duracion:'0,84 años' },
+    { g:{pts:92,pg:80,racha:0,dif:-9,v:710,d:21,q:5}, m:{pts:101,pg:86,racha:0,dif:9,v:711,d:26,q:7}, x:3, jugados:169, empezo:'15/01/2024', termino:'02/11/24', duracion:'0,80 años' },
+    { g:{pts:100,pg:86,racha:0,dif:4,v:685,d:17,q:9}, m:{pts:96,pg:83,racha:0,dif:-4,v:699,d:18,q:7}, x:5, jugados:174, empezo:'02/11/2024', termino:'01/09/25', duracion:'0,83 años' },
     { g:{pts:60,pg:53,racha:0,dif:-18,v:473,d:8,q:5}, m:{pts:78,pg:65,racha:2,dif:18,v:483,d:8,q:11}, x:2, jugados:120, empezo:'01/09/2025', termino:'08/04/26', duracion:'0,60 años' }
   ];
 
