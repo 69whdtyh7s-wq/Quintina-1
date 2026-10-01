@@ -1384,6 +1384,26 @@
   .tally-box.box-lose { background: var(--lose-bg); color: #4a1a1a; }
   .tally-box.box-tie { background: #dad6c6; color: #4a473e; }
 
+  /* Cuadro temporal con el desglose de puntos del último partido terminado.
+     Aparece al presionar "Terminar" y queda visible hasta el primer tiro
+     de la partida siguiente. */
+  .match-points-box {
+    max-width: 420px;
+    margin: 0 auto 14px;
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    padding: 10px 18px 12px;
+    text-align: center;
+    background: var(--green);
+    color: var(--green-ink);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+  .match-points-box.hidden { display: none; }
+  .mpb-title { font-weight: 900; font-size: 1.15rem; margin-bottom: 6px; }
+  .mpb-list { list-style: none; margin: 0 0 6px; padding: 0; font-size: 0.95rem; font-weight: 600; }
+  .mpb-list li { line-height: 1.4; }
+  .mpb-total { font-weight: 900; font-size: 1.25rem; border-top: 2px solid var(--green-ink); padding-top: 6px; margin-top: 2px; }
+
   .edit-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2056,6 +2076,12 @@
          pantalla en vez de ir dentro del flujo normal de la página. */
       padding-bottom: 118px;
     }
+    /* Cuando el cuadro de desglose de puntos está visible, también queda
+       fijo (pinned) por encima del contador, así que hace falta reservar
+       hueco extra abajo para que no tape filas reales de la tabla. */
+    #tablaPage.has-points-box {
+      padding-bottom: 340px;
+    }
     #tablaPage .tabla-footer {
       display: flex;
       align-items: center;
@@ -2078,6 +2104,19 @@
     #tablaPage .tally-box { flex: 0 0 auto; width: 150px; max-width: none; padding: 6px 0; border-radius: 12px; }
     #tablaPage .tally-name { font-size: 1.1rem; margin-bottom: 2px; }
     #tablaPage .tally-num { font-size: 2.6rem; }
+    #tablaPage .match-points-box {
+      position: fixed;
+      left: 50%;
+      bottom: 150px;
+      transform: translateX(-50%);
+      margin: 0;
+      z-index: 61;
+      max-width: 340px;
+      padding: 7px 14px 8px;
+    }
+    #tablaPage .mpb-title { font-size: 1rem; margin-bottom: 3px; }
+    #tablaPage .mpb-list { font-size: 0.82rem; margin-bottom: 4px; }
+    #tablaPage .mpb-total { font-size: 1.05rem; padding-top: 4px; }
     #tablaPage .footer-tools {
       display: grid;
       grid-template-columns: auto auto;
@@ -2516,6 +2555,11 @@
       <button type="button" class="timer-btn" id="timerResetBtn" aria-label="Reiniciar cronómetro">↺</button>
     </div>
   </div>
+  </div>
+  <div class="match-points-box hidden" id="matchPointsBox">
+    <div class="mpb-title" id="mpbTitle"></div>
+    <ul class="mpb-list" id="mpbList"></ul>
+    <div class="mpb-total" id="mpbTotal"></div>
   </div>
   <div class="tally-row">
     <div class="tally-box guido" id="tallyBoxG">
@@ -3639,6 +3683,7 @@
 
     if (target && target.value !== '' && !wasFilled) {
       startMatchTimerIfNeeded();
+      hideMatchPointsBox();
       if (player !== currentTurn) {
         errorPlayer = player;
       } else {
@@ -6551,6 +6596,11 @@ function buildHistorialTable() {
     const game = computeCurrentGameData();
     const row15 = HISTORIAL[currentRowIndex];
 
+    // Snapshot de pg/q/d ANTES de acumular el partido, para poder desglosar
+    // después cuántos puntos de campeonato aportó este partido concretamente.
+    const prevPgG = row15.g.pg, prevQG = row15.g.q, prevDG = row15.g.d || 0;
+    const prevPgM = row15.m.pg, prevQM = row15.m.q, prevDM = row15.m.d || 0;
+
     // Calcular borres totales del partido actual
     let borresG = 0, borresM = 0;
     for (let b = 1; b <= BOARDS; b++) {
@@ -6616,11 +6666,85 @@ function buildHistorialTable() {
 
     saveRow15State();
 
+    // Desglose de los puntos de campeonato que ganó el jugador ganador
+    // con este partido (comparando contra el snapshot de antes de acumular).
+    if (gameWinner === 'G' || gameWinner === 'M') {
+      const p = gameWinner === 'G' ? 'g' : 'm';
+      const prevPg = gameWinner === 'G' ? prevPgG : prevPgM;
+      const prevQ = gameWinner === 'G' ? prevQG : prevQM;
+      const prevD = gameWinner === 'G' ? prevDG : prevDM;
+      const deltaPg = row15[p].pg - prevPg;
+      const deltaQ = row15[p].q - prevQ;
+      const deltaD = Math.floor((row15[p].d || 0) / 3) - Math.floor(prevD / 3);
+      const total = deltaPg + deltaQ + deltaD;
+      const items = [];
+      if (deltaPg > 0) items.push({ label: 'Por ganar el partido', value: deltaPg });
+      if (deltaQ > 0) items.push({ label: 'Por quintina', value: deltaQ });
+      if (deltaD > 0) items.push({ label: 'Por dormidas', value: deltaD });
+      showMatchPointsBox(gameWinner === 'G' ? 'Guido' : 'Martín', items, total);
+    } else {
+      hideMatchPointsBox();
+    }
+
     buildRecordsPage();
     pauseTimerOnFinish();
     clearBoardOnly(true);
     updateUndoFinishBtn();
     showTablaPage();
+  }
+
+  const MATCH_POINTS_BOX_KEY = 'quintina_match_points_box';
+
+  function showMatchPointsBox(playerName, items, total) {
+    saveMatchPointsBoxData({ playerName: playerName, items: items, total: total });
+    renderMatchPointsBox(playerName, items, total);
+  }
+
+  function renderMatchPointsBox(playerName, items, total) {
+    const box = document.getElementById('matchPointsBox');
+    if (!box) return;
+    document.getElementById('mpbTitle').textContent = '¡' + playerName + ' ganó la partida!';
+    document.getElementById('mpbList').innerHTML = items.map(function(it) {
+      return '<li>+' + it.value + ' · ' + it.label + '</li>';
+    }).join('');
+    document.getElementById('mpbTotal').textContent = 'Total: +' + total + (total === 1 ? ' punto' : ' puntos');
+    box.classList.remove('hidden');
+    const tablaPageEl = document.getElementById('tablaPage');
+    if (tablaPageEl) tablaPageEl.classList.add('has-points-box');
+    // En iPad (layout con pie fijo), si la tabla de campeonatos tiene muchas
+    // filas puede no quedar hueco visible debajo para el cuadro fijo: en
+    // ese caso, desplazamos la página lo justo para que no tape filas reales.
+    requestAnimationFrame(function() {
+      if (tablaPageEl && tablaPageEl.classList.contains('hidden')) return;
+      const footerEl = document.querySelector('#tablaPage .tabla-footer');
+      if (!footerEl) return;
+      const footerBottom = footerEl.getBoundingClientRect().bottom;
+      const boxTop = box.getBoundingClientRect().top;
+      const overlap = footerBottom - boxTop + 12;
+      if (overlap > 0) window.scrollBy(0, overlap);
+    });
+  }
+
+  function hideMatchPointsBox() {
+    const box = document.getElementById('matchPointsBox');
+    const wasVisible = box && !box.classList.contains('hidden');
+    if (box) box.classList.add('hidden');
+    const tablaPageEl = document.getElementById('tablaPage');
+    if (tablaPageEl) tablaPageEl.classList.remove('has-points-box');
+    if (wasVisible) window.scrollTo(0, 0);
+    try { localStorage.removeItem(MATCH_POINTS_BOX_KEY); } catch (e) {}
+  }
+
+  function saveMatchPointsBoxData(data) {
+    try { localStorage.setItem(MATCH_POINTS_BOX_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function loadMatchPointsBoxOnInit() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(MATCH_POINTS_BOX_KEY) || 'null'); } catch (e) {}
+    if (data && data.playerName && Array.isArray(data.items)) {
+      renderMatchPointsBox(data.playerName, data.items, data.total);
+    }
   }
 
   function updateUndoFinishBtn() {
@@ -6684,6 +6808,7 @@ function buildHistorialTable() {
       buildRecordsPage();
       updateUndoRedoBtns();
       updateUndoFinishBtn();
+      hideMatchPointsBox();
     });
   }
 
@@ -6720,6 +6845,7 @@ function buildHistorialTable() {
   buildHistorialTable();
   buildRecordsPage();
   updateTimerToggleBtn();
+  loadMatchPointsBoxOnInit();
 
   document.getElementById('timerToggleBtn').addEventListener('click', toggleMatchTimer);
   document.getElementById('timerResetBtn').addEventListener('click', function() {
