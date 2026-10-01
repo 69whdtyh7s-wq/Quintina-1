@@ -6318,6 +6318,9 @@ function buildHistorialTable() {
         return '<td class="' + cls + '">' + val + '</td>';
       }
       function editableCell(val, player, field, cls) {
+        if (isFrozen) {
+          return '<td class="' + cls + ' frozen-cell">' + val + '</td>';
+        }
         return '<td class="' + cls + ' hist-editable" contenteditable="true" inputmode="numeric" data-row="' + idx + '" data-player="' + player + '" data-field="' + field + '" onfocus="onHistFocus(this)" onblur="onHistBlur(this)" onkeydown="onHistKey(this, event)">' + val + '</td>';
       }
       function editableRowCell(val, field, cls) {
