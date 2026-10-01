@@ -6724,9 +6724,9 @@ function buildHistorialTable() {
       const deltaD = Math.floor((row.d || 0) / 3) - Math.floor(prevD / 3);
       const total = deltaPg + deltaQ + deltaD;
       const items = [];
-      if (deltaPg > 0) items.push({ label: 'Por ganar el partido', value: deltaPg });
-      if (deltaQ > 0) items.push({ label: 'Por quintina', value: deltaQ });
-      if (deltaD > 0) items.push({ label: 'Por dormidas', value: deltaD });
+      if (deltaPg > 0) items.push({ label: 'Partido ganado', value: deltaPg });
+      if (deltaQ > 0) items.push({ label: 'Quintina', value: deltaQ });
+      if (deltaD > 0) items.push({ label: 'Dormidas', value: deltaD });
       return { items: items, total: total };
     }
     const breakdownG = computeMatchPointsDelta(prevPgG, prevQG, prevDG, row15.g);
