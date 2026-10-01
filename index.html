@@ -2472,71 +2472,6 @@
     --tabla-accent-row: #eef2ff;
     --accent: #4f46e5;
   }
-  /* Estilo "Oscuro": mismos colores de acierto/error/récord que Clásico
-     (son pasteles claros con texto oscuro ya probado), pero con las
-     superficies de fondo invertidas a tonos cálidos oscuros en vez de
-     claros, para poder usar la app de noche sin encandilar. */
-  html[data-theme="oscuro"] {
-    --paper: #56503e;
-    --ink: #f8f4e6;
-    --tie: #2b2619;
-    --tie-ink: #f3efdf;
-    --divider: #7a7260;
-    --title-bg: #3d3829;
-    --col-x-bg: #3a3527;
-    --green: #a8df8e;
-    --green-ink: #17330a;
-    --red: #f4a29a;
-    --red-ink: #3a110e;
-    --rec-red: #fbc6c2;
-    --rec-red-ink: #4a1512;
-    --rec-green: #c8e6c9;
-    --rec-green-ink: #113315;
-    --rec-hdr: #3d3829;
-    --win-bg: #b8e0c8;
-    --lose-bg: #e8c4c4;
-    --tabla-card-bg: #56503e;
-    --tabla-header-bg: #f8f4e6;
-    --tabla-accent-row: #4a452f;
-  }
-  html[data-theme="oscuro"] .edit-group input,
-  html[data-theme="oscuro"] .rec-edit-label input,
-  html[data-theme="oscuro"] .bk-text {
-    background: #413c2c;
-    color: var(--ink);
-  }
-  html[data-theme="oscuro"] .frozen-row { background: #413c2c !important; }
-  html[data-theme="oscuro"] .frozen-cell { background: #4a4532 !important; color: #ded6ba !important; }
-  html[data-theme="oscuro"] .hist-editable { background: #4d4832 !important; }
-  html[data-theme="oscuro"] .hist-editable:hover { background: #5c5640 !important; box-shadow: inset 0 0 0 1px #847c62; }
-  html[data-theme="oscuro"] .hist-editable:focus { background: #6b6450 !important; }
-  html[data-theme="oscuro"] table.historial-table tr.totals-row td { background: #413c2c; }
-  html[data-theme="oscuro"] table.historial-table td.tie-cell,
-  html[data-theme="oscuro"] table.historial-table tr.totals-row td.tie-cell,
-  html[data-theme="oscuro"] table.historial-table td.frozen-cell.tie-cell,
-  html[data-theme="oscuro"] table.historial-table td.hist-editable.tie-cell:not(:focus) {
-    background: #2b2619 !important;
-    color: #f3efdf !important;
-  }
-  html[data-theme="oscuro"] .th-racha-badge.box-tie,
-  html[data-theme="oscuro"] .tally-box.box-tie,
-  html[data-theme="oscuro"] .dd-opt.is-sel {
-    background: #2b2619;
-    color: #f3efdf;
-  }
-  html[data-theme="oscuro"] .th-racha-badge .rb-num:focus { background: #6b6450; }
-  html[data-theme="oscuro"] .galeria-card-media { background: #413c2c; }
-  html[data-theme="oscuro"] .pill-btn:active,
-  html[data-theme="oscuro"] .pill-btn.is-current {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  html[data-theme="oscuro"] .mpb-col { background: #2b2619; color: #f3efdf; }
-  html[data-theme="oscuro"] .rec-cat-banner { background: #3d3829; }
-  html[data-theme="oscuro"] .rec-val-cell.bg-gray { background: #6b6450; }
-  html[data-theme="oscuro"] .rec-row { border-bottom-color: #847c62; }
-  html[data-theme="oscuro"] .rec-label { border-right-color: #847c62; }
-  html[data-theme="oscuro"] .rec-val-cell { border-right-color: #847c62; }
 
   /* Tipografías propias de Bosque y Océano (el Clásico no se toca: sigue
      con la tipografía del sistema de siempre). */
@@ -2630,7 +2565,6 @@
   .theme-opt-swatch.sw-bosque { background: linear-gradient(90deg, #e9efdf 50%, #223019 50%); }
   .theme-opt-swatch.sw-oceano { background: linear-gradient(90deg, #e3edf2 50%, #14232c 50%); }
   .theme-opt-swatch.sw-moderno { background: linear-gradient(90deg, #f7f8fb 50%, #4f46e5 50%); }
-  .theme-opt-swatch.sw-oscuro { background: linear-gradient(90deg, #56503e 50%, #f8f4e6 50%); }
   .theme-opt-btn.is-active { background: var(--accent); color: var(--paper); }
   .theme-opt-btn.is-active .theme-opt-swatch { border-color: var(--paper); }
 </style>
@@ -2767,9 +2701,6 @@
           <button type="button" class="theme-opt-btn" id="themeOptModerno" data-theme-opt="moderno">
             <span class="theme-opt-swatch sw-moderno"></span>Moderno
           </button>
-          <button type="button" class="theme-opt-btn" id="themeOptOscuro" data-theme-opt="oscuro">
-            <span class="theme-opt-swatch sw-oscuro"></span>Oscuro
-          </button>
         </div>
       </div>
     </div>
@@ -2797,9 +2728,9 @@
 
       <div class="edit-section-title">General</div>
       <div class="edit-group"><label>Empates (X)</label><input type="number" id="edit_x"></div>
-      <div class="edit-group"><label>Partidos Jugados</label><input type="number" id="edit_jugados"></div>
-      <div class="edit-group"><label>Empezó</label><input type="text" id="edit_empezo"></div>
-      <div class="edit-group"><label>Terminó</label><input type="text" id="edit_termino"></div>
+      <div class="edit-group"><label>PJ</label><input type="number" id="edit_jugados"></div>
+      <div class="edit-group"><label>Inicio</label><input type="text" id="edit_empezo"></div>
+      <div class="edit-group"><label>Fin</label><input type="text" id="edit_termino"></div>
       <div class="edit-group" style="grid-column: span 2;"><label>Duración</label><input type="text" id="edit_duracion"></div>
     </div>
     <div class="modal-btns">
@@ -5598,7 +5529,7 @@
 
   // --- Estilo visual (Ajustes > Estilo) ---
   const THEME_KEY = 'quintina_theme';
-  const VALID_THEMES = ['clasico', 'bosque', 'oceano', 'moderno', 'oscuro'];
+  const VALID_THEMES = ['clasico', 'bosque', 'oceano', 'moderno'];
 
   function applyTheme(theme) {
     if (VALID_THEMES.indexOf(theme) === -1) theme = 'clasico';
@@ -6300,9 +6231,9 @@ function buildHistorialTable() {
       '<th>pts</th><th>pg</th><th>dif</th><th>V</th><th>D</th><th class="border-right-thick">Q</th>' +
       '<th class="col-x-header" style="font-size:1.4rem;">X</th>' +
       '<th>pts</th><th>pg</th><th>dif</th><th>V</th><th>D</th><th class="border-right-thick">Q</th>' +
-      '<th class="hdr-jugados">Partidos<br>Jugados</th>' +
-      '<th class="col-fechas">Empezó</th>' +
-      '<th class="col-fechas">Terminó</th>' +
+      '<th class="hdr-jugados">PJ</th>' +
+      '<th class="col-fechas">Inicio</th>' +
+      '<th class="col-fechas">Fin</th>' +
       '<th class="col-fechas">Duración</th>';
     t.appendChild(headRow2);
     if (window.applyFechasState) window.applyFechasState();
@@ -7140,6 +7071,21 @@ function buildHistorialTable() {
     if (e.target.id === 'galeriaLightbox') closeGaleriaLightbox();
   });
 
+  // Cerrar cualquier ventana flotante (modal) tocando fuera de ella, es
+  // decir, tocando el fondo oscuro (el overlay) y no la tarjeta en sí.
+  document.getElementById('editRow15Modal').addEventListener('click', function(e) {
+    if (e.target.id === 'editRow15Modal') closeEditRow15Modal();
+  });
+  document.getElementById('backupModal').addEventListener('click', function(e) {
+    if (e.target.id === 'backupModal') closeBackup();
+  });
+  document.getElementById('recEditModal').addEventListener('click', function(e) {
+    if (e.target.id === 'recEditModal') closeRecEdit();
+  });
+  document.getElementById('confirmModal').addEventListener('click', function(e) {
+    if (e.target.id === 'confirmModal') document.getElementById('modalCancel').click();
+  });
+
   const ajustesBtnEl = document.getElementById('ajustesBtn');
   const ajustesModalEl = document.getElementById('ajustesModal');
   if (ajustesBtnEl) ajustesBtnEl.addEventListener('click', function() {
@@ -7148,6 +7094,9 @@ function buildHistorialTable() {
   const ajustesCloseBtn = document.getElementById('ajustesClose');
   if (ajustesCloseBtn) ajustesCloseBtn.addEventListener('click', function() {
     ajustesModalEl.classList.add('hidden');
+  });
+  ajustesModalEl.addEventListener('click', function(e) {
+    if (e.target.id === 'ajustesModal') ajustesModalEl.classList.add('hidden');
   });
   const ajustesBackupBtn = document.getElementById('ajustesBackup');
   if (ajustesBackupBtn) ajustesBackupBtn.addEventListener('click', function() {
