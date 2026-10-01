@@ -1388,21 +1388,33 @@
      Aparece al presionar "Terminar" y queda visible hasta el primer tiro
      de la partida siguiente. */
   .match-points-box {
-    max-width: 420px;
+    max-width: 460px;
     margin: 0 auto 14px;
     border: 3px solid var(--ink);
     border-radius: 14px;
-    padding: 10px 18px 12px;
+    padding: 10px 16px 12px;
     text-align: center;
-    background: var(--green);
-    color: var(--green-ink);
+    background: var(--paper);
+    color: var(--ink);
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   }
   .match-points-box.hidden { display: none; }
-  .mpb-title { font-weight: 900; font-size: 1.15rem; margin-bottom: 6px; }
-  .mpb-list { list-style: none; margin: 0 0 6px; padding: 0; font-size: 0.95rem; font-weight: 600; }
-  .mpb-list li { line-height: 1.4; }
-  .mpb-total { font-weight: 900; font-size: 1.25rem; border-top: 2px solid var(--green-ink); padding-top: 6px; margin-top: 2px; }
+  .mpb-title { font-weight: 900; font-size: 1.15rem; margin-bottom: 8px; }
+  .mpb-cols { display: flex; gap: 14px; justify-content: center; }
+  .mpb-col {
+    flex: 1;
+    min-width: 0;
+    border: 2px solid var(--divider);
+    border-radius: 10px;
+    padding: 6px 8px 8px;
+    background: #dad6c6;
+  }
+  .mpb-col.is-winner { border-color: var(--green-ink); background: var(--green); color: var(--green-ink); }
+  .mpb-player { font-weight: 900; font-size: 0.95rem; margin-bottom: 3px; }
+  .mpb-list { list-style: none; margin: 0 0 4px; padding: 0; font-size: 0.85rem; font-weight: 600; min-height: 1.2em; }
+  .mpb-list li { line-height: 1.35; }
+  .mpb-list .mpb-empty { font-weight: 500; opacity: 0.65; font-style: italic; }
+  .mpb-total { font-weight: 900; font-size: 1.05rem; border-top: 2px solid currentColor; padding-top: 5px; margin-top: 2px; }
 
   .edit-grid {
     display: grid;
@@ -2111,12 +2123,15 @@
       transform: translateX(-50%);
       margin: 0;
       z-index: 61;
-      max-width: 340px;
-      padding: 7px 14px 8px;
+      max-width: 400px;
+      padding: 7px 12px 8px;
     }
-    #tablaPage .mpb-title { font-size: 1rem; margin-bottom: 3px; }
-    #tablaPage .mpb-list { font-size: 0.82rem; margin-bottom: 4px; }
-    #tablaPage .mpb-total { font-size: 1.05rem; padding-top: 4px; }
+    #tablaPage .mpb-title { font-size: 1rem; margin-bottom: 5px; }
+    #tablaPage .mpb-cols { gap: 10px; }
+    #tablaPage .mpb-col { padding: 5px 6px 6px; }
+    #tablaPage .mpb-player { font-size: 0.82rem; margin-bottom: 2px; }
+    #tablaPage .mpb-list { font-size: 0.74rem; margin-bottom: 3px; }
+    #tablaPage .mpb-total { font-size: 0.92rem; padding-top: 4px; }
     #tablaPage .footer-tools {
       display: grid;
       grid-template-columns: auto auto;
@@ -2558,8 +2573,18 @@
   </div>
   <div class="match-points-box hidden" id="matchPointsBox">
     <div class="mpb-title" id="mpbTitle"></div>
-    <ul class="mpb-list" id="mpbList"></ul>
-    <div class="mpb-total" id="mpbTotal"></div>
+    <div class="mpb-cols">
+      <div class="mpb-col">
+        <div class="mpb-player">Guido</div>
+        <ul class="mpb-list" id="mpbListG"></ul>
+        <div class="mpb-total" id="mpbTotalG"></div>
+      </div>
+      <div class="mpb-col">
+        <div class="mpb-player">Martín</div>
+        <ul class="mpb-list" id="mpbListM"></ul>
+        <div class="mpb-total" id="mpbTotalM"></div>
+      </div>
+    </div>
   </div>
   <div class="tally-row">
     <div class="tally-box guido" id="tallyBoxG">
@@ -6666,25 +6691,24 @@ function buildHistorialTable() {
 
     saveRow15State();
 
-    // Desglose de los puntos de campeonato que ganó el jugador ganador
-    // con este partido (comparando contra el snapshot de antes de acumular).
-    if (gameWinner === 'G' || gameWinner === 'M') {
-      const p = gameWinner === 'G' ? 'g' : 'm';
-      const prevPg = gameWinner === 'G' ? prevPgG : prevPgM;
-      const prevQ = gameWinner === 'G' ? prevQG : prevQM;
-      const prevD = gameWinner === 'G' ? prevDG : prevDM;
-      const deltaPg = row15[p].pg - prevPg;
-      const deltaQ = row15[p].q - prevQ;
-      const deltaD = Math.floor((row15[p].d || 0) / 3) - Math.floor(prevD / 3);
+    // Desglose de los puntos de campeonato que ganó CADA jugador con este
+    // partido (comparando contra el snapshot de antes de acumular), tanto
+    // el ganador como el perdedor (p.ej. el perdedor puede sumar puntos
+    // por dormidas aunque no haya ganado el partido).
+    function computeMatchPointsDelta(prevPg, prevQ, prevD, row) {
+      const deltaPg = row.pg - prevPg;
+      const deltaQ = row.q - prevQ;
+      const deltaD = Math.floor((row.d || 0) / 3) - Math.floor(prevD / 3);
       const total = deltaPg + deltaQ + deltaD;
       const items = [];
       if (deltaPg > 0) items.push({ label: 'Por ganar el partido', value: deltaPg });
       if (deltaQ > 0) items.push({ label: 'Por quintina', value: deltaQ });
       if (deltaD > 0) items.push({ label: 'Por dormidas', value: deltaD });
-      showMatchPointsBox(gameWinner === 'G' ? 'Guido' : 'Martín', items, total);
-    } else {
-      hideMatchPointsBox();
+      return { items: items, total: total };
     }
+    const breakdownG = computeMatchPointsDelta(prevPgG, prevQG, prevDG, row15.g);
+    const breakdownM = computeMatchPointsDelta(prevPgM, prevQM, prevDM, row15.m);
+    showMatchPointsBox(gameWinner, breakdownG, breakdownM);
 
     buildRecordsPage();
     pauseTimerOnFinish();
@@ -6695,19 +6719,37 @@ function buildHistorialTable() {
 
   const MATCH_POINTS_BOX_KEY = 'quintina_match_points_box';
 
-  function showMatchPointsBox(playerName, items, total) {
-    saveMatchPointsBoxData({ playerName: playerName, items: items, total: total });
-    renderMatchPointsBox(playerName, items, total);
+  function showMatchPointsBox(gameWinner, breakdownG, breakdownM) {
+    saveMatchPointsBoxData({ gameWinner: gameWinner, breakdownG: breakdownG, breakdownM: breakdownM });
+    renderMatchPointsBox(gameWinner, breakdownG, breakdownM);
   }
 
-  function renderMatchPointsBox(playerName, items, total) {
+  function renderMatchPointsCol(elListId, elTotalId, breakdown) {
+    const listEl = document.getElementById(elListId);
+    const totalEl = document.getElementById(elTotalId);
+    if (!listEl || !totalEl) return;
+    if (breakdown.items.length > 0) {
+      listEl.innerHTML = breakdown.items.map(function(it) {
+        return '<li>+' + it.value + ' · ' + it.label + '</li>';
+      }).join('');
+    } else {
+      listEl.innerHTML = '<li class="mpb-empty">Sin puntos</li>';
+    }
+    totalEl.textContent = 'Total: +' + breakdown.total + (breakdown.total === 1 ? ' punto' : ' puntos');
+  }
+
+  function renderMatchPointsBox(gameWinner, breakdownG, breakdownM) {
     const box = document.getElementById('matchPointsBox');
     if (!box) return;
-    document.getElementById('mpbTitle').textContent = '¡' + playerName + ' ganó la partida!';
-    document.getElementById('mpbList').innerHTML = items.map(function(it) {
-      return '<li>+' + it.value + ' · ' + it.label + '</li>';
-    }).join('');
-    document.getElementById('mpbTotal').textContent = 'Total: +' + total + (total === 1 ? ' punto' : ' puntos');
+    const title = gameWinner === 'G' ? '¡Guido ganó la partida!' :
+      gameWinner === 'M' ? '¡Martín ganó la partida!' : 'Partido empatado';
+    document.getElementById('mpbTitle').textContent = title;
+    renderMatchPointsCol('mpbListG', 'mpbTotalG', breakdownG);
+    renderMatchPointsCol('mpbListM', 'mpbTotalM', breakdownM);
+    const colG = document.getElementById('mpbTotalG').closest('.mpb-col');
+    const colM = document.getElementById('mpbTotalM').closest('.mpb-col');
+    if (colG) colG.classList.toggle('is-winner', gameWinner === 'G');
+    if (colM) colM.classList.toggle('is-winner', gameWinner === 'M');
     box.classList.remove('hidden');
     const tablaPageEl = document.getElementById('tablaPage');
     if (tablaPageEl) tablaPageEl.classList.add('has-points-box');
@@ -6742,8 +6784,8 @@ function buildHistorialTable() {
   function loadMatchPointsBoxOnInit() {
     let data = null;
     try { data = JSON.parse(localStorage.getItem(MATCH_POINTS_BOX_KEY) || 'null'); } catch (e) {}
-    if (data && data.playerName && Array.isArray(data.items)) {
-      renderMatchPointsBox(data.playerName, data.items, data.total);
+    if (data && data.breakdownG && data.breakdownM) {
+      renderMatchPointsBox(data.gameWinner, data.breakdownG, data.breakdownM);
     }
   }
 
