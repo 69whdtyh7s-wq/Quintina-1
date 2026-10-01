@@ -6144,6 +6144,13 @@
       }
     }
   } catch(e) {}
+  // Las filas congeladas (1 a 14) son historia cerrada y están bloqueadas
+  // en la pantalla: sus cifras se toman siempre del código (HISTORIAL_INITIAL),
+  // nunca de lo guardado en el dispositivo, para que queden iguales en
+  // todos lados y una corrección futura se refleje al actualizar la app.
+  for (let fi = 0; fi < FROZEN_COUNT && fi < HISTORIAL_INITIAL.length; fi++) {
+    HISTORIAL[fi] = JSON.parse(JSON.stringify(HISTORIAL_INITIAL[fi]));
+  }
   try { if (HISTORIAL[currentRowIndex]) { HISTORIAL[currentRowIndex].termino = getFormattedTodayDate(); } } catch(e) {}
 
   function saveRow15State() {
@@ -6285,8 +6292,8 @@ function buildHistorialTable() {
 
       const difClassG = row.g.dif > 0 ? 'dif-pos' : (row.g.dif < 0 ? 'dif-neg' : 'tie-cell');
       const difClassM = row.m.dif > 0 ? 'dif-pos' : (row.m.dif < 0 ? 'dif-neg' : 'tie-cell');
-      const valVG = (row.g.v !== null && row.g.v !== undefined) ? row.g.v : 0;
-      const valVM = (row.m.v !== null && row.m.v !== undefined) ? row.m.v : 0;
+      const valVG = (row.g.v !== null && row.g.v !== undefined) ? row.g.v : '';
+      const valVM = (row.m.v !== null && row.m.v !== undefined) ? row.m.v : '';
       const pgG = row.g.pg || 0, pgM = row.m.pg || 0;
       let classPgG = '', classPgM = '';
       if (pgG === pgM) { classPgG = 'tie-cell'; classPgM = 'tie-cell'; }
