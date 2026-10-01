@@ -6382,7 +6382,7 @@ function buildHistorialTable() {
     const addRowTr = document.createElement('tr');
     addRowTr.className = 'add-champ-row';
     const nextNum = HISTORIAL.length + 1;
-    const undoNewChampHtml = newChampSnapshot ? ' <button type="button" class="new-champ-undo-btn" onclick="undoNewChampionship()">Deshacer nuevo campeonato</button>' : '';
+    const undoNewChampHtml = canUndoNewChampionship() ? ' <button type="button" class="new-champ-undo-btn" onclick="undoOrDeleteNewChampionship()">Deshacer nuevo campeonato</button>' : '';
     addRowTr.innerHTML =
       '<td class="pos new-champ-pos"><button class="new-champ-circle" onclick="startNewChampionship()" title="Nuevo campeonato">+</button></td>' +
       '<td colspan="16" class="new-champ-label-cell"><span class="new-champ-label-text">Nuevo campeonato — fila ' + nextNum + '</span>' + undoNewChampHtml + '</td>' +
@@ -6911,6 +6911,36 @@ function buildHistorialTable() {
       HISTORIAL.length = snap.historialLength;
       HISTORIAL[snap.oldRowIndex] = snap.oldRow;
       currentRowIndex = snap.oldRowIndex;
+      saveRow15State();
+      buildHistorialTable();
+      updateUndoFinishBtn();
+    });
+  }
+
+  // Si la fila actual está totalmente vacía (nadie jugó nada todavía) y no es
+  // la única fila, se puede borrar y volver a dejar la anterior como actual,
+  // incluso si ya no queda en memoria el "snapshot" preciso de undo (por
+  // ejemplo, si se recargó la página después de tocar "+" por error).
+  function isCurrentRowEmpty() {
+    if (currentRowIndex !== HISTORIAL.length - 1) return false;
+    const row = HISTORIAL[currentRowIndex];
+    if (!row) return false;
+    return row.jugados === 0 &&
+      row.g.pts === 0 && row.g.pg === 0 && (row.g.v || 0) === 0 && row.g.d === 0 && row.g.q === 0 &&
+      row.m.pts === 0 && row.m.pg === 0 && (row.m.v || 0) === 0 && row.m.d === 0 && row.m.q === 0 &&
+      (row.x || 0) === 0;
+  }
+
+  function canUndoNewChampionship() {
+    return !!newChampSnapshot || (currentRowIndex > 0 && isCurrentRowEmpty());
+  }
+
+  function undoOrDeleteNewChampionship() {
+    if (newChampSnapshot) { undoNewChampionship(); return; }
+    if (currentRowIndex <= 0 || !isCurrentRowEmpty()) return;
+    showConfirmModal('¿Borrar esta fila vacía y volver a dejar el campeonato anterior como el actual?', function() {
+      HISTORIAL.pop();
+      currentRowIndex = HISTORIAL.length - 1;
       saveRow15State();
       buildHistorialTable();
       updateUndoFinishBtn();
