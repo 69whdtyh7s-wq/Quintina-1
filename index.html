@@ -5891,20 +5891,7 @@
     try { saveGaleriaItems(); } catch (e) {}
     const data = {};
     BACKUP_KEYS.forEach(function(k) {
-      try {
-        if (k === 'quintina_historial_state') {
-          // Las filas congeladas (1 a 14) ya viven en el código
-          // (HISTORIAL_INITIAL) y se recargan solas al abrir la app, así
-          // que la copia de seguridad solo necesita guardar el campeonato
-          // en curso (todo lo que haya a partir de la fila 15).
-          data[k] = JSON.stringify({
-            rows: HISTORIAL.slice(FROZEN_COUNT),
-            currentRowIndex: currentRowIndex
-          });
-          return;
-        }
-        const v = localStorage.getItem(k); if (v !== null) data[k] = v;
-      } catch (e) {}
+      try { const v = localStorage.getItem(k); if (v !== null) data[k] = v; } catch (e) {}
     });
     return JSON.stringify({ app: 'quintina-respaldo', version: 1, fecha: new Date().toISOString(), data: data });
   }
@@ -6102,25 +6089,7 @@
     }
     try {
       BACKUP_KEYS.forEach(function(k) {
-        if (typeof parsed.data[k] !== 'string') return;
-        if (k === 'quintina_historial_state') {
-          // Compatibilidad con copias viejas (que traían las 15+ filas
-          // completas) y con las nuevas (que solo traen el campeonato en
-          // curso): si lo que llega ya tiene las filas congeladas, se usa
-          // tal cual; si no, se completa con las filas congeladas actuales
-          // del código antes de guardar.
-          try {
-            const incoming = JSON.parse(parsed.data[k]);
-            let rows = Array.isArray(incoming.rows) ? incoming.rows : [];
-            let curIdx = (typeof incoming.currentRowIndex === 'number') ? incoming.currentRowIndex : (rows.length - 1);
-            if (rows.length < HISTORIAL_INITIAL.length) {
-              rows = JSON.parse(JSON.stringify(HISTORIAL_INITIAL.slice(0, FROZEN_COUNT))).concat(rows);
-            }
-            localStorage.setItem(k, JSON.stringify({ rows: rows, currentRowIndex: curIdx }));
-          } catch (e) {}
-          return;
-        }
-        localStorage.setItem(k, parsed.data[k]);
+        if (typeof parsed.data[k] === 'string') localStorage.setItem(k, parsed.data[k]);
       });
     } catch (e) {
       bkSetStatus('No se pudo escribir en este dispositivo.', true);
@@ -6156,7 +6125,7 @@
     { g:{pts:60,pg:53,racha:0,dif:-18,v:473,d:8,q:5}, m:{pts:78,pg:65,racha:2,dif:18,v:483,d:8,q:11}, x:2, jugados:120, empezo:'01/09/2025', termino:'08/04/26', duracion:'0,60 años' }
   ];
 
-  const FROZEN_COUNT = 14; // filas 1 a 14: historia cerrada, sus cifras siempre vienen del código
+  const FROZEN_COUNT = 14; // filas 1 a 14: historia cerrada (bloqueada para edición)
 
   let HISTORIAL = JSON.parse(JSON.stringify(HISTORIAL_INITIAL));
   let currentRowIndex = HISTORIAL.length - 1;
@@ -6175,15 +6144,6 @@
       }
     }
   } catch(e) {}
-  // Las filas congeladas (1 a 14) son historia cerrada y están bloqueadas
-  // en la pantalla: sus cifras se toman siempre del código (HISTORIAL_INITIAL)
-  // y nunca de lo que haya quedado guardado en el dispositivo, para que una
-  // corrección hecha en el código se vea reflejada en todos los dispositivos
-  // en cuanto se actualice la app, sin que datos viejos del almacenamiento
-  // local la tapen.
-  for (let fi = 0; fi < FROZEN_COUNT && fi < HISTORIAL_INITIAL.length; fi++) {
-    HISTORIAL[fi] = JSON.parse(JSON.stringify(HISTORIAL_INITIAL[fi]));
-  }
   try { if (HISTORIAL[currentRowIndex]) { HISTORIAL[currentRowIndex].termino = getFormattedTodayDate(); } } catch(e) {}
 
   function saveRow15State() {
