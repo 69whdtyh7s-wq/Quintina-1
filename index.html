@@ -2477,13 +2477,13 @@
      superficies de fondo invertidas a tonos cálidos oscuros en vez de
      claros, para poder usar la app de noche sin encandilar. */
   html[data-theme="oscuro"] {
-    --paper: #1a170f;
-    --ink: #efe9d6;
-    --tie: #4c4738;
+    --paper: #56503e;
+    --ink: #f8f4e6;
+    --tie: #2b2619;
     --tie-ink: #f3efdf;
-    --divider: #635e4a;
-    --title-bg: #2d291b;
-    --col-x-bg: #292518;
+    --divider: #7a7260;
+    --title-bg: #3d3829;
+    --col-x-bg: #3a3527;
     --green: #a8df8e;
     --green-ink: #17330a;
     --red: #f4a29a;
@@ -2492,51 +2492,51 @@
     --rec-red-ink: #4a1512;
     --rec-green: #c8e6c9;
     --rec-green-ink: #113315;
-    --rec-hdr: #2d291b;
+    --rec-hdr: #3d3829;
     --win-bg: #b8e0c8;
     --lose-bg: #e8c4c4;
-    --tabla-card-bg: #1a170f;
-    --tabla-header-bg: #efe9d6;
-    --tabla-accent-row: #211d12;
+    --tabla-card-bg: #56503e;
+    --tabla-header-bg: #f8f4e6;
+    --tabla-accent-row: #4a452f;
   }
   html[data-theme="oscuro"] .edit-group input,
   html[data-theme="oscuro"] .rec-edit-label input,
   html[data-theme="oscuro"] .bk-text {
-    background: #272216;
+    background: #413c2c;
     color: var(--ink);
   }
-  html[data-theme="oscuro"] .frozen-row { background: #241f14 !important; }
-  html[data-theme="oscuro"] .frozen-cell { background: #2b2518 !important; color: #c9c2a8 !important; }
-  html[data-theme="oscuro"] .hist-editable { background: #242015 !important; }
-  html[data-theme="oscuro"] .hist-editable:hover { background: #2d2818 !important; box-shadow: inset 0 0 0 1px #4a4530; }
-  html[data-theme="oscuro"] .hist-editable:focus { background: #332d1c !important; }
-  html[data-theme="oscuro"] table.historial-table tr.totals-row td { background: #241f14; }
+  html[data-theme="oscuro"] .frozen-row { background: #413c2c !important; }
+  html[data-theme="oscuro"] .frozen-cell { background: #4a4532 !important; color: #ded6ba !important; }
+  html[data-theme="oscuro"] .hist-editable { background: #4d4832 !important; }
+  html[data-theme="oscuro"] .hist-editable:hover { background: #5c5640 !important; box-shadow: inset 0 0 0 1px #847c62; }
+  html[data-theme="oscuro"] .hist-editable:focus { background: #6b6450 !important; }
+  html[data-theme="oscuro"] table.historial-table tr.totals-row td { background: #413c2c; }
   html[data-theme="oscuro"] table.historial-table td.tie-cell,
   html[data-theme="oscuro"] table.historial-table tr.totals-row td.tie-cell,
   html[data-theme="oscuro"] table.historial-table td.frozen-cell.tie-cell,
   html[data-theme="oscuro"] table.historial-table td.hist-editable.tie-cell:not(:focus) {
-    background: #4c4738 !important;
+    background: #2b2619 !important;
     color: #f3efdf !important;
   }
   html[data-theme="oscuro"] .th-racha-badge.box-tie,
   html[data-theme="oscuro"] .tally-box.box-tie,
   html[data-theme="oscuro"] .dd-opt.is-sel {
-    background: #4c4738;
+    background: #2b2619;
     color: #f3efdf;
   }
-  html[data-theme="oscuro"] .th-racha-badge .rb-num:focus { background: #332d1c; }
-  html[data-theme="oscuro"] .galeria-card-media { background: #241f14; }
+  html[data-theme="oscuro"] .th-racha-badge .rb-num:focus { background: #6b6450; }
+  html[data-theme="oscuro"] .galeria-card-media { background: #413c2c; }
   html[data-theme="oscuro"] .pill-btn:active,
   html[data-theme="oscuro"] .pill-btn.is-current {
     background: var(--ink);
     color: var(--paper);
   }
-  html[data-theme="oscuro"] .mpb-col { background: #4c4738; }
-  html[data-theme="oscuro"] .rec-cat-banner { background: #2d291b; }
-  html[data-theme="oscuro"] .rec-val-cell.bg-gray { background: #332d1c; }
-  html[data-theme="oscuro"] .rec-row { border-bottom-color: #3a3426; }
-  html[data-theme="oscuro"] .rec-label { border-right-color: #3a3426; }
-  html[data-theme="oscuro"] .rec-val-cell { border-right-color: #3a3426; }
+  html[data-theme="oscuro"] .mpb-col { background: #2b2619; color: #f3efdf; }
+  html[data-theme="oscuro"] .rec-cat-banner { background: #3d3829; }
+  html[data-theme="oscuro"] .rec-val-cell.bg-gray { background: #6b6450; }
+  html[data-theme="oscuro"] .rec-row { border-bottom-color: #847c62; }
+  html[data-theme="oscuro"] .rec-label { border-right-color: #847c62; }
+  html[data-theme="oscuro"] .rec-val-cell { border-right-color: #847c62; }
 
   /* Tipografías propias de Bosque y Océano (el Clásico no se toca: sigue
      con la tipografía del sistema de siempre). */
@@ -2630,7 +2630,7 @@
   .theme-opt-swatch.sw-bosque { background: linear-gradient(90deg, #e9efdf 50%, #223019 50%); }
   .theme-opt-swatch.sw-oceano { background: linear-gradient(90deg, #e3edf2 50%, #14232c 50%); }
   .theme-opt-swatch.sw-moderno { background: linear-gradient(90deg, #f7f8fb 50%, #4f46e5 50%); }
-  .theme-opt-swatch.sw-oscuro { background: linear-gradient(90deg, #1a170f 50%, #efe9d6 50%); }
+  .theme-opt-swatch.sw-oscuro { background: linear-gradient(90deg, #56503e 50%, #f8f4e6 50%); }
   .theme-opt-btn.is-active { background: var(--accent); color: var(--paper); }
   .theme-opt-btn.is-active .theme-opt-swatch { border-color: var(--paper); }
 </style>
