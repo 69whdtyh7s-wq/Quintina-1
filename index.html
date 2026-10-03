@@ -903,6 +903,24 @@
     .stats-card { padding: 12px 8px 16px; }
     .stats-card h3 { font-size: 0.98rem; }
   }
+  .stats-hitos-card { max-width: 900px; margin: 0 auto 24px; }
+  .hito-chips-wrap {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  .hito-chip {
+    background: var(--rec-green);
+    color: var(--rec-green-ink);
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
   .galeria-card { position: relative; background: var(--paper); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
   .galeria-card-media { position: relative; width: 100%; aspect-ratio: 4 / 3; min-height: 0; overflow: hidden; background: #ece6d0; cursor: pointer; }
   .galeria-card-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -5656,6 +5674,115 @@
     return recordsBeatenThisMatch;
   }
 
+  function buildHitosCardHtml() {
+    // Partidos jugados acumulados (incluye el campeonato en curso)
+    let totalPartidos = 0;
+    const cumulativeByRow = [];
+    HISTORIAL.forEach(function(row) {
+      totalPartidos += (row.jugados || 0);
+      cumulativeByRow.push(totalPartidos);
+    });
+
+    const partidosStep = 500;
+    const partidosHitos = [];
+    for (let m = partidosStep; m <= totalPartidos; m += partidosStep) {
+      let champNum = null;
+      for (let i = 0; i < cumulativeByRow.length; i++) {
+        if (cumulativeByRow[i] >= m) { champNum = i + 1; break; }
+      }
+      partidosHitos.push({ value: m, champNum: champNum });
+    }
+    const nextPartidosMilestone = (Math.floor(totalPartidos / partidosStep) + 1) * partidosStep;
+    const faltanPartidos = nextPartidosMilestone - totalPartidos;
+
+    // Antigüedad de la app (desde el primer campeonato hasta hoy)
+    const firstEmpezo = HISTORIAL.length > 0 ? HISTORIAL[0].empezo : null;
+    const todayStr = getFormattedTodayDate();
+    const aniosTotalesNum = firstEmpezo ? diffYearsNumeric(firstEmpezo, todayStr) : null;
+    const anioStep = 5;
+    const anioHitos = [];
+    if (firstEmpezo && aniosTotalesNum !== null) {
+      const firstDate = parseFechaToDate(firstEmpezo);
+      for (let y = anioStep; y <= Math.floor(aniosTotalesNum); y += anioStep) {
+        const milestoneDate = new Date(firstDate.getFullYear() + y, firstDate.getMonth(), firstDate.getDate());
+        anioHitos.push({ years: y, dateStr: formatDateObjShort(milestoneDate) });
+      }
+    }
+    const nextAnioMilestone = aniosTotalesNum !== null ? (Math.floor(aniosTotalesNum / anioStep) + 1) * anioStep : null;
+
+    // Campeonato más parejo / más dominante (solo campeonatos ya cerrados)
+    let masParejo = null, masDominante = null;
+    HISTORIAL.forEach(function(row, idx) {
+      if (idx >= currentRowIndex) return;
+      const diff = Math.abs((row.g.pts || 0) - (row.m.pts || 0));
+      const winner = (row.g.pts || 0) > (row.m.pts || 0) ? 'Guido' : ((row.m.pts || 0) > (row.g.pts || 0) ? 'Martín' : 'Empate');
+      const candidate = { num: idx + 1, diff: diff, winner: winner, g: row.g.pts || 0, m: row.m.pts || 0 };
+      if (!masParejo || diff < masParejo.diff) masParejo = candidate;
+      if (!masDominante || diff > masDominante.diff) masDominante = candidate;
+    });
+
+    let html = '<div class="rec-block stats-hitos-card">';
+    html += '<div class="rec-header-row"><div class="p-title">Hitos y medallas</div></div>';
+
+    html += '<div class="rec-cat-banner">Partidos jugados</div>';
+    html += '<div class="rec-row">' +
+      '<div class="rec-label">Total histórico</div>' +
+      '<div class="rec-val-cell bg-green" style="width:170px;min-width:170px;">' +
+        '<div class="rec-num">' + totalPartidos + '</div>' +
+        '<div class="rec-date" style="white-space:normal;">próximo hito: ' + nextPartidosMilestone + ' (faltan ' + faltanPartidos + ')</div>' +
+      '</div>' +
+    '</div>';
+    if (partidosHitos.length > 0) {
+      html += '<div class="rec-row"><div class="rec-label">Hitos alcanzados</div><div class="hito-chips-wrap">';
+      partidosHitos.forEach(function(h) {
+        html += '<span class="hito-chip">' + h.value + ' partidos' + (h.champNum ? ' · campeonato ' + h.champNum : '') + '</span>';
+      });
+      html += '</div></div>';
+    }
+
+    html += '<div class="rec-cat-banner">Antigüedad de Quintina</div>';
+    html += '<div class="rec-row">' +
+      '<div class="rec-label">Jugando desde ' + (firstEmpezo ? formatShortDate(firstEmpezo) : '—') + '</div>' +
+      '<div class="rec-val-cell bg-green" style="width:170px;min-width:170px;">' +
+        '<div class="rec-num">' + (aniosTotalesNum !== null ? aniosTotalesNum.toFixed(2).replace('.', ',') : '—') + '</div>' +
+        '<div class="rec-date" style="white-space:normal;">años' + (nextAnioMilestone !== null ? ' · próximo hito: ' + nextAnioMilestone : '') + '</div>' +
+      '</div>' +
+    '</div>';
+    if (anioHitos.length > 0) {
+      html += '<div class="rec-row"><div class="rec-label">Hitos alcanzados</div><div class="hito-chips-wrap">';
+      anioHitos.forEach(function(h) {
+        html += '<span class="hito-chip">' + h.years + ' años · ' + h.dateStr + '</span>';
+      });
+      html += '</div></div>';
+    }
+
+    html += '<div class="rec-cat-banner">Campeonatos destacados</div>';
+    if (masParejo) {
+      html += '<div class="rec-row">' +
+        '<div class="rec-label">Campeonato más parejo</div>' +
+        '<div class="rec-val-cell bg-gray" style="width:170px;min-width:170px;">' +
+          '<div class="rec-num">C' + masParejo.num + '</div>' +
+          '<div class="rec-date" style="white-space:normal;">diferencia de ' + masParejo.diff + ' pts (' + masParejo.g + '-' + masParejo.m + ')</div>' +
+        '</div>' +
+      '</div>';
+    }
+    if (masDominante) {
+      html += '<div class="rec-row">' +
+        '<div class="rec-label">Campeonato más dominante</div>' +
+        '<div class="rec-val-cell bg-gray" style="width:170px;min-width:170px;">' +
+          '<div class="rec-num">C' + masDominante.num + '</div>' +
+          '<div class="rec-date" style="white-space:normal;">ganó ' + masDominante.winner + ' por ' + masDominante.diff + ' pts</div>' +
+        '</div>' +
+      '</div>';
+    }
+    if (!masParejo && !masDominante) {
+      html += '<div class="rec-row"><div class="rec-label">Todavía no hay campeonatos cerrados para comparar.</div></div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
   function buildStatsPage() {
     const body = document.getElementById('statsBody');
     if (!body) return;
@@ -5764,7 +5891,8 @@
           '<div class="stats-legend-item"><span class="stats-legend-swatch" style="background:var(--stat-g);"></span>Guido</div>' +
           '<div class="stats-legend-item"><span class="stats-legend-swatch" style="background:var(--stat-m);"></span>Martín</div>' +
         '</div>' +
-      '</div>';
+      '</div>' +
+      buildHitosCardHtml();
 
     const wrap = body.querySelector('.stats-chart-wrap');
     const tooltip = document.getElementById('statsTooltip');
@@ -6486,13 +6614,25 @@
     return new Date(yyyy, mm - 1, dd);
   }
 
-  function computeDuracionAnios(empezoStr, terminoStr) {
+  function diffYearsNumeric(empezoStr, terminoStr) {
     const d1 = parseFechaToDate(empezoStr);
     const d2 = parseFechaToDate(terminoStr);
-    if (!d1 || !d2) return '';
+    if (!d1 || !d2) return null;
     const diffDays = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
-    const anios = diffDays / 365.25;
+    return diffDays / 365.25;
+  }
+
+  function computeDuracionAnios(empezoStr, terminoStr) {
+    const anios = diffYearsNumeric(empezoStr, terminoStr);
+    if (anios === null) return '';
     return anios.toFixed(2).replace('.', ',') + ' años';
+  }
+
+  function formatDateObjShort(d) {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2);
+    return dd + '/' + mm + '/' + yy;
   }
 
 function buildHistorialTable() {
