@@ -48,6 +48,10 @@
     --tabla-card-bg: #f6f1de;
     --tabla-header-bg: #2d2b26;
     --tabla-accent-row: #fffdf0;
+
+    /* Colores fijos de cada jugador para el gráfico de Estadísticas */
+    --stat-g: #c17f3a;
+    --stat-m: #167fa0;
   }
 
   * {
@@ -473,13 +477,13 @@
 
   .hidden { display: none !important; }
 
-  #recordsPage, #tablaPage {
+  #recordsPage, #tablaPage, #statsPage {
     width: 100%;
     max-width: 1150px;
     padding: 0 6px;
   }
 
-  #recordsPage h2, #tablaPage h2 {
+  #recordsPage h2, #tablaPage h2, #statsPage h2 {
     text-align: center;
     font-size: 1.6rem;
     margin: 10px 0 18px;
@@ -851,6 +855,54 @@
   .galeria-toolbar { display: flex; justify-content: center; margin: 6px 0 12px; }
   .galeria-add-btn { font-weight: 800; }
   .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; padding: 0 14px 24px; max-width: 900px; margin: 0 auto; }
+
+  /* Estadísticas */
+  .stats-card {
+    max-width: 900px;
+    margin: 0 auto 24px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.06);
+    padding: 16px 14px 20px;
+  }
+  .stats-card h3 { margin: 0 0 2px; font-size: 1.08rem; font-weight: 900; text-align: center; }
+  .stats-card .stats-subtitle { margin: 0 0 14px; font-size: 0.8rem; text-align: center; color: var(--divider); font-weight: 700; }
+  .stats-chart-wrap { position: relative; }
+  .stats-chart-svg { width: 100%; height: auto; display: block; overflow: visible; touch-action: pan-y; }
+  .stats-grid-line { stroke: var(--divider); stroke-width: 1; opacity: 0.35; }
+  .stats-axis-label { font-size: 11px; fill: var(--divider); font-weight: 700; font-family: inherit; }
+  .stats-crosshair { stroke: var(--divider); stroke-width: 1; }
+  .stats-hit-col { fill: transparent; cursor: pointer; }
+  .stats-legend { display: flex; justify-content: center; gap: 22px; margin-top: 12px; flex-wrap: wrap; }
+  .stats-legend-item { display: flex; align-items: center; gap: 7px; font-size: 0.86rem; font-weight: 800; color: var(--ink); }
+  .stats-legend-swatch { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+  .stats-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #2a2417;
+    color: #fff;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.08s ease;
+  }
+  .stats-tooltip.visible { opacity: 1; }
+  .stats-tooltip .stt-title { font-weight: 900; margin-bottom: 2px; }
+  .stats-tooltip .stt-dates { opacity: 0.75; margin-bottom: 6px; font-size: 0.68rem; }
+  .stats-tooltip .stt-row { display: flex; align-items: center; gap: 6px; }
+  .stats-tooltip .stt-key { width: 10px; height: 2px; border-radius: 1px; display: inline-block; }
+  @media (max-width: 600px) {
+    .stats-card { padding: 12px 8px 16px; }
+    .stats-card h3 { font-size: 0.98rem; }
+  }
   .galeria-card { position: relative; background: var(--paper); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
   .galeria-card-media { position: relative; width: 100%; aspect-ratio: 4 / 3; min-height: 0; overflow: hidden; background: #ece6d0; cursor: pointer; }
   .galeria-card-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -2597,6 +2649,7 @@
       <button class="pill-btn" id="recordsToBoard">Tablero</button>
       <button class="pill-btn" id="recordsToTabla">Campeonatos</button>
       <button class="pill-btn is-current" id="recordsCurrent" aria-current="page" tabindex="-1">Records</button>
+      <button class="pill-btn" id="recordsToStats">Estadísticas</button>
       <button class="pill-btn" id="recordsToGaleria">Galería</button>
     </div>
   </div>
@@ -2609,6 +2662,7 @@
       <button class="pill-btn" id="tablaToBoard">Tablero</button>
       <button class="pill-btn is-current" id="tablaCurrent" aria-current="page" tabindex="-1">Campeonatos</button>
       <button class="pill-btn" id="tablaToRecords">Records</button>
+      <button class="pill-btn" id="tablaToStats">Estadísticas</button>
       <button class="pill-btn" id="tablaToGaleria">Galería</button>
     </div>
   </div>
@@ -2655,12 +2709,27 @@
   </div>
 </div>
 
+<div id="statsPage" class="hidden">
+  <div class="page-tabs">
+    <div class="pill-group pill-tabs" role="tablist" aria-label="Secciones">
+      <button class="pill-btn" id="statsToBoard">Tablero</button>
+      <button class="pill-btn" id="statsToTabla">Campeonatos</button>
+      <button class="pill-btn" id="statsToRecords">Records</button>
+      <button class="pill-btn is-current" id="statsCurrent" aria-current="page" tabindex="-1">Estadísticas</button>
+      <button class="pill-btn" id="statsToGaleria">Galería</button>
+    </div>
+  </div>
+  <h2>Estadísticas</h2>
+  <div id="statsBody"></div>
+</div>
+
 <div id="galeriaPage" class="hidden">
   <div class="page-tabs">
     <div class="pill-group pill-tabs" role="tablist" aria-label="Secciones">
       <button class="pill-btn" id="galeriaToBoard">Tablero</button>
       <button class="pill-btn" id="galeriaToTabla">Campeonatos</button>
       <button class="pill-btn" id="galeriaToRecords">Records</button>
+      <button class="pill-btn" id="galeriaToStats">Estadísticas</button>
       <button class="pill-btn is-current" id="galeriaCurrent" aria-current="page" tabindex="-1">Galería</button>
     </div>
   </div>
@@ -5587,6 +5656,170 @@
     return recordsBeatenThisMatch;
   }
 
+  function buildStatsPage() {
+    const body = document.getElementById('statsBody');
+    if (!body) return;
+
+    const rows = HISTORIAL.map(function(row, idx) {
+      const isCurrent = (idx === currentRowIndex);
+      return {
+        num: idx + 1,
+        ptsG: row.g.pts || 0,
+        ptsM: row.m.pts || 0,
+        empezoFmt: formatShortDate(row.empezo),
+        terminoFmt: isCurrent ? formatShortDate(getFormattedTodayDate()) : formatShortDate(row.termino),
+        isCurrent: isCurrent
+      };
+    });
+
+    if (rows.length === 0) {
+      body.innerHTML = '<div class="stats-card"><p style="text-align:center;margin:0;">Todavía no hay campeonatos para graficar.</p></div>';
+      return;
+    }
+
+    const maxVal = Math.max(1, Math.max.apply(null, rows.map(function(r) { return Math.max(r.ptsG, r.ptsM); })));
+    const niceMax = Math.max(20, Math.ceil(maxVal / 20) * 20);
+
+    const W = 900, H = 320;
+    const padL = 46, padR = 16, padT = 18, padB = 36;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+    const n = rows.length;
+
+    function xPos(i) { return n > 1 ? (padL + i * (plotW / (n - 1))) : (padL + plotW / 2); }
+    function yPos(v) { return padT + plotH - (v / niceMax) * plotH; }
+
+    let gridAndAxes = '';
+    const numTicks = 4;
+    for (let t = 0; t <= numTicks; t++) {
+      const val = Math.round((niceMax / numTicks) * t);
+      const y = yPos(val);
+      gridAndAxes += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + y.toFixed(1) + '" class="stats-grid-line"/>';
+      gridAndAxes += '<text x="' + (padL - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" class="stats-axis-label">' + val + '</text>';
+    }
+    rows.forEach(function(r, i) {
+      gridAndAxes += '<text x="' + xPos(i).toFixed(1) + '" y="' + (H - padB + 20) + '" text-anchor="middle" class="stats-axis-label">C' + r.num + '</text>';
+    });
+
+    function buildSeries(key, colorVar) {
+      let solidD = '';
+      let dashedD = '';
+      rows.forEach(function(r, i) {
+        const x = xPos(i), y = yPos(r[key]);
+        if (i === 0) {
+          solidD += 'M' + x.toFixed(1) + ',' + y.toFixed(1);
+        } else if (r.isCurrent) {
+          const px = xPos(i - 1), py = yPos(rows[i - 1][key]);
+          dashedD = 'M' + px.toFixed(1) + ',' + py.toFixed(1) + ' L' + x.toFixed(1) + ',' + y.toFixed(1);
+        } else {
+          solidD += ' L' + x.toFixed(1) + ',' + y.toFixed(1);
+        }
+      });
+      let out = '<path d="' + solidD + '" fill="none" stroke="' + colorVar + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      if (dashedD) {
+        out += '<path d="' + dashedD + '" fill="none" stroke="' + colorVar + '" stroke-width="2" stroke-linecap="round" stroke-dasharray="5,5"/>';
+      }
+      rows.forEach(function(r, i) {
+        const x = xPos(i), y = yPos(r[key]);
+        if (r.isCurrent) {
+          out += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5" fill="var(--paper)" stroke="' + colorVar + '" stroke-width="2.5"/>';
+        } else {
+          out += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4.5" fill="' + colorVar + '" stroke="var(--paper)" stroke-width="2"/>';
+        }
+      });
+      const last = rows[rows.length - 1];
+      const lx = xPos(rows.length - 1), ly = yPos(last[key]);
+      out += '<text x="' + (lx + 8).toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" font-size="12" font-weight="900" fill="var(--ink)">' + last[key] + '</text>';
+      return out;
+    }
+
+    let seriesSvg = buildSeries('ptsG', 'var(--stat-g)') + buildSeries('ptsM', 'var(--stat-m)');
+
+    let hitSvg = '';
+    rows.forEach(function(r, i) {
+      const x = xPos(i);
+      const colW = n > 1 ? (plotW / (n - 1)) : plotW;
+      hitSvg += '<rect x="' + (x - colW / 2).toFixed(1) + '" y="' + padT + '" width="' + colW.toFixed(1) + '" height="' + plotH + '" class="stats-hit-col" data-idx="' + i + '"/>';
+    });
+
+    const crosshairX = xPos(0).toFixed(1);
+    const crosshairSvg = '<line id="statsCrosshair" x1="' + crosshairX + '" y1="' + padT + '" x2="' + crosshairX + '" y2="' + (padT + plotH) + '" class="stats-crosshair" style="opacity:0;"/>';
+
+    const fullSvg =
+      '<svg class="stats-chart-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" id="statsSvg">' +
+        crosshairSvg + gridAndAxes + seriesSvg + hitSvg +
+      '</svg>';
+
+    const lastIsCurrent = rows[rows.length - 1].isCurrent;
+
+    body.innerHTML =
+      '<div class="stats-card">' +
+        '<h3>Evolución de puntos por campeonato</h3>' +
+        '<p class="stats-subtitle">Puntos finales de cada campeonato' + (lastIsCurrent ? ' · el último sigue en curso' : '') + '</p>' +
+        '<div class="stats-chart-wrap">' +
+          fullSvg +
+          '<div class="stats-tooltip" id="statsTooltip"></div>' +
+        '</div>' +
+        '<div class="stats-legend">' +
+          '<div class="stats-legend-item"><span class="stats-legend-swatch" style="background:var(--stat-g);"></span>Guido</div>' +
+          '<div class="stats-legend-item"><span class="stats-legend-swatch" style="background:var(--stat-m);"></span>Martín</div>' +
+        '</div>' +
+      '</div>';
+
+    const wrap = body.querySelector('.stats-chart-wrap');
+    const tooltip = document.getElementById('statsTooltip');
+    const crosshair = document.getElementById('statsCrosshair');
+    const svgEl = document.getElementById('statsSvg');
+    const hitCols = body.querySelectorAll('.stats-hit-col');
+
+    function showStatsTooltip(i) {
+      const r = rows[i];
+      const x = xPos(i);
+      if (crosshair) {
+        crosshair.setAttribute('x1', x);
+        crosshair.setAttribute('x2', x);
+        crosshair.style.opacity = '1';
+      }
+      if (!tooltip || !svgEl || !wrap) return;
+      tooltip.innerHTML =
+        '<div class="stt-title">Campeonato ' + r.num + (r.isCurrent ? ' (en curso)' : '') + '</div>' +
+        '<div class="stt-dates">' + r.empezoFmt + ' — ' + (r.terminoFmt || '...') + '</div>' +
+        '<div class="stt-row"><span class="stt-key" style="background:var(--stat-g);"></span><strong>' + r.ptsG + '</strong>&nbsp;Guido</div>' +
+        '<div class="stt-row"><span class="stt-key" style="background:var(--stat-m);"></span><strong>' + r.ptsM + '</strong>&nbsp;Martín</div>';
+      const pt = svgEl.createSVGPoint();
+      pt.x = x; pt.y = padT;
+      const ctm = svgEl.getScreenCTM();
+      if (ctm) {
+        const screenPt = pt.matrixTransform(ctm);
+        const wrapRect = wrap.getBoundingClientRect();
+        let leftPx = screenPt.x - wrapRect.left;
+        const tw = tooltip.offsetWidth;
+        const minLeft = tw / 2 + 4;
+        const maxLeft = wrapRect.width - tw / 2 - 4;
+        if (leftPx < minLeft) leftPx = minLeft;
+        if (leftPx > maxLeft) leftPx = maxLeft;
+        tooltip.style.left = leftPx + 'px';
+        tooltip.style.top = (screenPt.y - wrapRect.top - 8) + 'px';
+      }
+      tooltip.classList.add('visible');
+    }
+
+    function hideStatsTooltip() {
+      if (tooltip) tooltip.classList.remove('visible');
+      if (crosshair) crosshair.style.opacity = '0';
+    }
+
+    hitCols.forEach(function(col) {
+      const i = parseInt(col.getAttribute('data-idx'), 10);
+      col.addEventListener('pointerenter', function() { showStatsTooltip(i); });
+      col.addEventListener('pointermove', function() { showStatsTooltip(i); });
+      col.addEventListener('pointerdown', function(e) { e.preventDefault(); showStatsTooltip(i); });
+    });
+    if (wrap) {
+      wrap.addEventListener('pointerleave', hideStatsTooltip);
+    }
+  }
+
   function buildRecordsPage() {
     const body = document.getElementById('recordsBody');
     body.innerHTML = '';
@@ -7087,12 +7320,14 @@ function buildHistorialTable() {
   const recordsPage = document.getElementById('recordsPage');
   const tablaPage = document.getElementById('tablaPage');
   const galeriaPage = document.getElementById('galeriaPage');
+  const statsPage = document.getElementById('statsPage');
 
   function hideAllPages() {
     mainPage.classList.add('hidden');
     recordsPage.classList.add('hidden');
     tablaPage.classList.add('hidden');
     galeriaPage.classList.add('hidden');
+    statsPage.classList.add('hidden');
   }
 
   function showTablaPage() {
@@ -7105,6 +7340,12 @@ function buildHistorialTable() {
     renderGaleriaGrid();
     hideAllPages();
     galeriaPage.classList.remove('hidden');
+  }
+
+  function showStatsPage() {
+    buildStatsPage();
+    hideAllPages();
+    statsPage.classList.remove('hidden');
   }
 
   document.getElementById('showRecords').addEventListener('click', function() {
@@ -7132,6 +7373,10 @@ function buildHistorialTable() {
     showGaleriaPage();
   });
 
+  document.getElementById('recordsToStats').addEventListener('click', function() {
+    showStatsPage();
+  });
+
   document.getElementById('tablaToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
@@ -7147,6 +7392,10 @@ function buildHistorialTable() {
     showGaleriaPage();
   });
 
+  document.getElementById('tablaToStats').addEventListener('click', function() {
+    showStatsPage();
+  });
+
   document.getElementById('galeriaToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
@@ -7160,6 +7409,29 @@ function buildHistorialTable() {
     buildRecordsPage();
     hideAllPages();
     recordsPage.classList.remove('hidden');
+  });
+
+  document.getElementById('galeriaToStats').addEventListener('click', function() {
+    showStatsPage();
+  });
+
+  document.getElementById('statsToBoard').addEventListener('click', function() {
+    hideAllPages();
+    mainPage.classList.remove('hidden');
+  });
+
+  document.getElementById('statsToTabla').addEventListener('click', function() {
+    showTablaPage();
+  });
+
+  document.getElementById('statsToRecords').addEventListener('click', function() {
+    buildRecordsPage();
+    hideAllPages();
+    recordsPage.classList.remove('hidden');
+  });
+
+  document.getElementById('statsToGaleria').addEventListener('click', function() {
+    showGaleriaPage();
   });
 
   document.getElementById('galeriaAddBtn').addEventListener('click', function() {
