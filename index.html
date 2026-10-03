@@ -983,7 +983,103 @@
   .pill-icon-btn svg { width: 17px; height: 17px; }
   .pill-icon-btn.is-saved { background: var(--rec-green, #c3e3b8); }
   .pill-icon-divider { width: 2px; align-self: stretch; margin: 6px 0; background: var(--ink); opacity: 0.25; }
-  .ajustes-menu { display: flex; flex-direction: column; gap: 10px; }
+  /* Ajustes: tarjeta estilo "hoja de ajustes" moderna, con sus propias
+     clases para no afectar el resto de las ventanas flotantes de la app. */
+  #ajustesModal .ajustes-card {
+    max-width: 380px;
+    width: 92%;
+    padding: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    text-align: left;
+  }
+  #ajustesModal .ajustes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 18px 14px 22px;
+    border-bottom: 1px solid var(--divider);
+  }
+  #ajustesModal .ajustes-header p {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+  #ajustesModal .ajustes-close-x {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0;
+    touch-action: manipulation;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  #ajustesModal .ajustes-close-x svg { width: 15px; height: 15px; }
+  #ajustesModal .ajustes-close-x:active { background: var(--accent); color: var(--paper); }
+  #ajustesModal .ajustes-body {
+    padding: 14px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  #ajustesModal .ajustes-section-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--divider);
+    margin: 0 4px 6px;
+  }
+  #ajustesModal .ajustes-list {
+    background: rgba(0,0,0,0.025);
+    border: 1px solid var(--divider);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  #ajustesModal .ajustes-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--divider);
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #ajustesModal .ajustes-row:last-child { border-bottom: none; }
+  #ajustesModal .ajustes-row:active { background: rgba(0,0,0,0.07); }
+  #ajustesModal .ajustes-row:disabled { opacity: 0.4; cursor: not-allowed; }
+  #ajustesModal .ajustes-row:disabled:active { background: transparent; }
+  #ajustesModal .ajustes-row-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 9px;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #ajustesModal .ajustes-row-icon svg { width: 16px; height: 16px; }
+  #ajustesModal .ajustes-row-label { flex: 1; }
+  html[data-theme="moderno"] #ajustesModal .ajustes-row-icon { background: var(--accent); border-radius: 10px; }
 
   input.rec-edit-date {
     width: 70px;
@@ -2780,15 +2876,46 @@
 </div>
 
 <div id="ajustesModal" class="modal-overlay hidden">
-  <div class="modal-card" style="max-width: 340px; width: 90%;">
-    <p style="font-size: 1.2rem; font-weight: 900; margin-bottom: 14px;">Ajustes</p>
-    <div class="ajustes-menu">
-      <button type="button" class="app-btn" id="ajustesUndoFinish" disabled>Deshacer Terminar</button>
-      <button type="button" class="app-btn" id="ajustesClearBoard">Limpiar tablero</button>
-      <button type="button" class="app-btn" id="ajustesGaleria">Galería</button>
-      <button type="button" class="app-btn" id="ajustesBackup">Copia de seguridad</button>
-      <div>
-        <p style="font-size: 0.85rem; font-weight: 800; margin: 4px 0 6px; text-align: left;">Estilo</p>
+  <div class="modal-card ajustes-card">
+    <div class="ajustes-header">
+      <p>Ajustes</p>
+      <button type="button" class="ajustes-close-x" id="ajustesClose" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="ajustes-body">
+      <div class="ajustes-section">
+        <div class="ajustes-section-label">Partida en curso</div>
+        <div class="ajustes-list">
+          <button type="button" class="ajustes-row" id="ajustesUndoFinish" disabled>
+            <span class="ajustes-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+            <span class="ajustes-row-label">Deshacer Terminar</span>
+          </button>
+          <button type="button" class="ajustes-row" id="ajustesClearBoard">
+            <span class="ajustes-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></span>
+            <span class="ajustes-row-label">Limpiar tablero</span>
+          </button>
+        </div>
+      </div>
+      <div class="ajustes-section">
+        <div class="ajustes-section-label">Secciones</div>
+        <div class="ajustes-list">
+          <button type="button" class="ajustes-row" id="ajustesStats">
+            <span class="ajustes-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-8"/><path d="M14 7h6v6"/></svg></span>
+            <span class="ajustes-row-label">Estadísticas</span>
+          </button>
+          <button type="button" class="ajustes-row" id="ajustesGaleria">
+            <span class="ajustes-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
+            <span class="ajustes-row-label">Galería</span>
+          </button>
+          <button type="button" class="ajustes-row" id="ajustesBackup">
+            <span class="ajustes-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg></span>
+            <span class="ajustes-row-label">Copia de seguridad</span>
+          </button>
+        </div>
+      </div>
+      <div class="ajustes-section">
+        <div class="ajustes-section-label">Apariencia</div>
         <div class="theme-opt-row">
           <button type="button" class="theme-opt-btn" id="themeOptClasico" data-theme-opt="clasico">
             <span class="theme-opt-swatch sw-clasico"></span>Clásico
@@ -2805,7 +2932,6 @@
         </div>
       </div>
     </div>
-    <button type="button" class="app-btn" id="ajustesClose" style="margin-top:10px;">Cerrar</button>
   </div>
 </div>
 
@@ -7624,6 +7750,11 @@ function buildHistorialTable() {
   if (ajustesGaleriaBtn) ajustesGaleriaBtn.addEventListener('click', function() {
     ajustesModalEl.classList.add('hidden');
     showGaleriaPage();
+  });
+  const ajustesStatsBtn = document.getElementById('ajustesStats');
+  if (ajustesStatsBtn) ajustesStatsBtn.addEventListener('click', function() {
+    ajustesModalEl.classList.add('hidden');
+    showStatsPage();
   });
   const ajustesUndoFinishBtn = document.getElementById('ajustesUndoFinish');
   if (ajustesUndoFinishBtn) ajustesUndoFinishBtn.addEventListener('click', function() {
