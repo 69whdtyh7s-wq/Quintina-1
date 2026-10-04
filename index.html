@@ -2100,6 +2100,15 @@
     }
   }
 
+  /* Galería: en iPad 5ta generación (768x1024) queremos siempre 3 fotos
+     por fila, en vez de que el ancho decida cuántas entran solas. */
+  @media (orientation: portrait) and (max-width: 768px) {
+    .galeria-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+  @media (min-width: 768px) and (max-width: 1024px) and (max-height: 768px) {
+    .galeria-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
 
   /* Líneas gruesas más finas en pestaña tableros */
   .board-end {
@@ -2884,6 +2893,15 @@
       </button>
     </div>
     <div class="ajustes-body">
+      <div class="ajustes-section">
+        <div class="ajustes-section-label">Aplicación</div>
+        <div class="ajustes-list">
+          <button type="button" class="ajustes-row" id="ajustesRefresh">
+            <span class="ajustes-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></span>
+            <span class="ajustes-row-label">Refrescar</span>
+          </button>
+        </div>
+      </div>
       <div class="ajustes-section">
         <div class="ajustes-section-label">Partida en curso</div>
         <div class="ajustes-list">
@@ -7755,6 +7773,13 @@ function buildHistorialTable() {
   if (ajustesStatsBtn) ajustesStatsBtn.addEventListener('click', function() {
     ajustesModalEl.classList.add('hidden');
     showStatsPage();
+  });
+  const ajustesRefreshBtn = document.getElementById('ajustesRefresh');
+  if (ajustesRefreshBtn) ajustesRefreshBtn.addEventListener('click', function() {
+    // Navega a la misma página con un parámetro distinto cada vez, para
+    // forzar que el dispositivo pida la versión más nueva en vez de
+    // quedarse con una copia guardada en caché.
+    window.location.href = window.location.pathname + '?r=' + Date.now();
   });
   const ajustesUndoFinishBtn = document.getElementById('ajustesUndoFinish');
   if (ajustesUndoFinishBtn) ajustesUndoFinishBtn.addEventListener('click', function() {
