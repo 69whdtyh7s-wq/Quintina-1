@@ -2158,6 +2158,18 @@
     }
   }
 
+  /* iPad 5ª gen vertical: en este ancho la tabla del Tablero llega casi
+     hasta el borde derecho, y la píldora flotante de guardar/ajustes
+     (fija arriba a la derecha) tapaba el número de la fila de "Tiros"
+     que queda justo debajo del toolbar. Se achica un poco la píldora
+     en este breakpoint para que quede arriba del todo, sin invadir esa
+     fila. */
+  @media (orientation: portrait) and (max-width: 768px) {
+    #topActionsPill { top: max(4px, env(safe-area-inset-top)); }
+    #topActionsPill .pill-icon-btn { height: 26px; }
+    #topActionsPill .pill-icon-divider { margin: 4px 0; }
+  }
+
   /* Galería: en iPad 5ta generación (768x1024) queremos siempre 3 fotos
      por fila, en vez de que el ancho decida cuántas entran solas. */
   @media (orientation: portrait) and (max-width: 768px) {
