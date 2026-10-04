@@ -83,9 +83,20 @@
   /* Pestaña Tablero: nunca permite scroll vertical (el tamaño de las
      celdas ya se calcula para entrar en la altura de la pantalla). Se
      agrega/quita del <body> al cambiar de pestaña; las demás pestañas
-     sí necesitan poder desplazarse verticalmente. */
+     sí necesitan poder desplazarse verticalmente.
+     overflow-y:hidden solo no alcanza en iOS Safari (el "bounce" táctil
+     igual deja scrollear), por eso se suma touch-action y
+     overscroll-behavior para bloquear el gesto táctil verticalmente,
+     permitiendo el gesto horizontal (por si el tablero necesita
+     desplazarse hacia los costados). */
   body.board-no-vscroll {
     overflow-y: hidden;
+    touch-action: pan-x;
+    overscroll-behavior-y: none;
+  }
+  body.board-no-vscroll #mainPage {
+    touch-action: pan-x;
+    overscroll-behavior-y: none;
   }
 
   .app-header {
@@ -2162,7 +2173,15 @@
   /* La pestaña Tablero nunca scrollea verticalmente; las demás pestañas
      sí pueden, si su contenido no entra en la altura de la pantalla. */
   body:not(.board-no-vscroll) { overflow-y: auto !important; }
-  body.board-no-vscroll { overflow-y: hidden !important; }
+  body.board-no-vscroll {
+    overflow-y: hidden !important;
+    touch-action: pan-x !important;
+    overscroll-behavior-y: none !important;
+  }
+  body.board-no-vscroll #mainPage {
+    touch-action: pan-x !important;
+    overscroll-behavior-y: none !important;
+  }
   body { padding: 2px 0 !important; }
   .app-header { display: none !important; }
   #mainPage .board-scroll {
@@ -7641,6 +7660,32 @@ function buildHistorialTable() {
     // (Campeonatos, Records, Estadísticas, Galería) lo necesitan.
     document.body.classList.remove('board-no-vscroll');
   }
+
+  // Refuerzo para iOS Safari: "overflow:hidden" y "touch-action" por CSS no
+  // siempre alcanzan para frenar el scroll/rebote táctil vertical en iPad.
+  // Este listener detecta cuando el dedo se mueve predominantemente en
+  // vertical mientras la pestaña Tablero está activa y cancela el gesto,
+  // sin afectar el desplazamiento horizontal del tablero ni el scroll
+  // vertical de las demás pestañas.
+  (function() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    document.addEventListener('touchstart', function(e) {
+      if (!document.body.classList.contains('board-no-vscroll')) return;
+      if (!e.touches || e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (!document.body.classList.contains('board-no-vscroll')) return;
+      if (!e.touches || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  })();
 
   function showTablaPage() {
     buildHistorialTable();
