@@ -198,18 +198,36 @@
     box-shadow: none;
     background: transparent;
   }
+  /* Mismo aspecto que los botones de la otra esquina (.top-toolbar .tb-btn):
+     cuadrados, separador fino, mismo tamaño y trazo de icono, mismo
+     resaltado cuadrado al pulsar. */
   #boardPillHost #topActionsPill .pill-icon-btn {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     width: auto;
     height: 100%;
+    border-radius: 0;
+    color: var(--ink);
+  }
+  #boardPillHost #topActionsPill .pill-icon-btn:active {
+    background: var(--accent);
+    color: var(--paper);
+    border-radius: 0;
   }
   #boardPillHost #topActionsPill .pill-icon-btn svg {
-    width: 15px;
-    height: 15px;
+    width: calc(15px * var(--k, 1));
+    height: calc(15px * var(--k, 1));
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
   }
   #boardPillHost #topActionsPill .pill-icon-divider {
     align-self: stretch;
-    margin: 3px 0;
+    width: 1px;
+    margin: 0;
+    background: #c9c5b6;
+    opacity: 1;
   }
 
   td.stat-cell {
