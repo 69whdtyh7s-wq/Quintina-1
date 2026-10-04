@@ -7698,31 +7698,14 @@ function buildHistorialTable() {
     setBoardNoVScroll(false);
   }
 
-  // Refuerzo para iOS Safari: "overflow:hidden" y "touch-action" por CSS no
-  // siempre alcanzan para frenar el scroll/rebote táctil vertical en iPad.
-  // Este listener detecta cuando el dedo se mueve predominantemente en
-  // vertical mientras la pestaña Tablero está activa y cancela el gesto,
-  // sin afectar el desplazamiento horizontal del tablero ni el scroll
-  // vertical de las demás pestañas.
-  (function() {
-    let touchStartX = 0;
-    let touchStartY = 0;
-    document.addEventListener('touchstart', function(e) {
-      if (!document.body.classList.contains('board-no-vscroll')) return;
-      if (!e.touches || e.touches.length !== 1) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-    document.addEventListener('touchmove', function(e) {
-      if (!document.body.classList.contains('board-no-vscroll')) return;
-      if (!e.touches || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - touchStartX;
-      const dy = e.touches[0].clientY - touchStartY;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-  })();
+  // (Antes había acá un listener de touchmove en JS que cancelaba el gesto
+  // vertical a mano, como refuerzo del bloqueo de scroll de la pestaña
+  // Tablero. Se quitó: al cancelar touchmove a nivel de documento podía
+  // interceptar también el gesto de desplazar la ruedita nativa de iOS al
+  // elegir un valor en una celda (el <select> de puntaje), dejando esa
+  // selección nativa a medio abrir y la app congelada. El bloqueo de
+  // scroll ya queda cubierto, sin ese riesgo, por el position:fixed +
+  // touch-action del CSS de arriba.)
 
   function showTablaPage() {
     buildHistorialTable();
