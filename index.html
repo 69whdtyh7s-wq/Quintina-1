@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="board-no-vscroll">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -82,21 +82,35 @@
 
   /* Pestaña Tablero: nunca permite scroll vertical (el tamaño de las
      celdas ya se calcula para entrar en la altura de la pantalla). Se
-     agrega/quita del <body> al cambiar de pestaña; las demás pestañas
-     sí necesitan poder desplazarse verticalmente.
-     overflow-y:hidden solo no alcanza en iOS Safari (el "bounce" táctil
-     igual deja scrollear), por eso se suma touch-action y
-     overscroll-behavior para bloquear el gesto táctil verticalmente,
-     permitiendo el gesto horizontal (por si el tablero necesita
-     desplazarse hacia los costados). */
+     agrega/quita del <html> y <body> al cambiar de pestaña; las demás
+     pestañas sí necesitan poder desplazarse verticalmente.
+     En iOS Safari, overflow-y:hidden (y hasta touch-action) NO alcanzan:
+     el motor de scroll/rebote táctil de Safari puede igual mover la
+     página. La técnica que sí funciona en iOS es fijar <html> y <body>
+     con position:fixed + height:100%, de forma que no exista ningún
+     contenedor con el que el gesto pueda scrollear: no hay "elástico"
+     posible si no hay nada que mover. El scroll horizontal del tablero
+     sigue intacto porque ocurre adentro de .board-scroll (que tiene su
+     propio overflow-x:auto), no en html/body. */
+  html.board-no-vscroll,
   body.board-no-vscroll {
-    overflow-y: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     touch-action: pan-x;
-    overscroll-behavior-y: none;
+    overscroll-behavior: none;
   }
   body.board-no-vscroll #mainPage {
     touch-action: pan-x;
-    overscroll-behavior-y: none;
+    overscroll-behavior: none;
+    height: 100%;
+    overflow: hidden;
+  }
+  body.board-no-vscroll #mainPage .board-scroll {
+    max-height: 100%;
   }
 
   .app-header {
@@ -2173,15 +2187,24 @@
   /* La pestaña Tablero nunca scrollea verticalmente; las demás pestañas
      sí pueden, si su contenido no entra en la altura de la pantalla. */
   body:not(.board-no-vscroll) { overflow-y: auto !important; }
+  html.board-no-vscroll,
   body.board-no-vscroll {
-    overflow-y: hidden !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
     touch-action: pan-x !important;
-    overscroll-behavior-y: none !important;
+    overscroll-behavior: none !important;
   }
   body.board-no-vscroll #mainPage {
     touch-action: pan-x !important;
-    overscroll-behavior-y: none !important;
+    overscroll-behavior: none !important;
+    height: 100% !important;
+    overflow: hidden !important;
   }
+  body:not(.board-no-vscroll) { position: static !important; height: auto !important; }
   body { padding: 2px 0 !important; }
   .app-header { display: none !important; }
   #mainPage .board-scroll {
@@ -7650,6 +7673,15 @@ function buildHistorialTable() {
   const galeriaPage = document.getElementById('galeriaPage');
   const statsPage = document.getElementById('statsPage');
 
+  // El bloqueo de scroll vertical de la pestaña Tablero necesita la clase
+  // tanto en <html> como en <body> (ver CSS) para que funcione de forma
+  // confiable en iOS Safari. Esta función centraliza el toggle para que
+  // ambos elementos queden siempre sincronizados.
+  function setBoardNoVScroll(on) {
+    document.documentElement.classList.toggle('board-no-vscroll', !!on);
+    document.body.classList.toggle('board-no-vscroll', !!on);
+  }
+
   function hideAllPages() {
     mainPage.classList.add('hidden');
     recordsPage.classList.add('hidden');
@@ -7658,7 +7690,7 @@ function buildHistorialTable() {
     statsPage.classList.add('hidden');
     // Solo la pestaña Tablero bloquea el scroll vertical; las demás
     // (Campeonatos, Records, Estadísticas, Galería) lo necesitan.
-    document.body.classList.remove('board-no-vscroll');
+    setBoardNoVScroll(false);
   }
 
   // Refuerzo para iOS Safari: "overflow:hidden" y "touch-action" por CSS no
@@ -7718,7 +7750,7 @@ function buildHistorialTable() {
   document.getElementById('recordsToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
-    document.body.classList.add('board-no-vscroll');
+    setBoardNoVScroll(true);
   });
 
   document.getElementById('recordsToTabla').addEventListener('click', function() {
@@ -7738,7 +7770,7 @@ function buildHistorialTable() {
   document.getElementById('tablaToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
-    document.body.classList.add('board-no-vscroll');
+    setBoardNoVScroll(true);
   });
 
   document.getElementById('tablaToRecords').addEventListener('click', function() {
@@ -7758,7 +7790,7 @@ function buildHistorialTable() {
   document.getElementById('galeriaToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
-    document.body.classList.add('board-no-vscroll');
+    setBoardNoVScroll(true);
   });
 
   document.getElementById('galeriaToTabla').addEventListener('click', function() {
@@ -7778,7 +7810,7 @@ function buildHistorialTable() {
   document.getElementById('statsToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
-    document.body.classList.add('board-no-vscroll');
+    setBoardNoVScroll(true);
   });
 
   document.getElementById('statsToTabla').addEventListener('click', function() {
@@ -7881,7 +7913,7 @@ function buildHistorialTable() {
       updateRecordsAlertButton();
       hideAllPages();
       mainPage.classList.remove('hidden');
-      document.body.classList.add('board-no-vscroll');
+      setBoardNoVScroll(true);
     });
   });
 
