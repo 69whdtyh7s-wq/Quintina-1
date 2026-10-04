@@ -7846,6 +7846,7 @@ function buildHistorialTable() {
     hideAllPages();
     mainPage.classList.remove('hidden');
     moveTopPillIntoBoard();
+    if (window.fitTableroSoon) window.fitTableroSoon();
   }
 
   // (Antes había acá un listener de touchmove en JS que cancelaba el gesto
@@ -8058,8 +8059,26 @@ function buildHistorialTable() {
     document.documentElement.style.setProperty('--k', k.toFixed(3));
   }
   fitTablero();
+  // En iOS el tamaño de pantalla que se lee puede ser transitorio (al cargar,
+  // al volver a la app desde segundo plano, al girar, al cambiar de pestaña,
+  // con la barra del navegador): si se calculaba justo en ese momento el
+  // tablero quedaba pequeño hasta recargar. Por eso se recalcula en todos
+  // esos eventos y con reintentos escalonados, además del resize normal.
+  function fitTableroSoon() {
+    fitTablero();
+    if (window.requestAnimationFrame) requestAnimationFrame(fitTablero);
+    [100, 300, 700, 1500].forEach(function(ms) { setTimeout(fitTablero, ms); });
+  }
+  window.fitTableroSoon = fitTableroSoon;
   window.addEventListener('resize', fitTablero);
-  window.addEventListener('orientationchange', function() { setTimeout(fitTablero, 250); });
+  window.addEventListener('orientationchange', fitTableroSoon);
+  window.addEventListener('pageshow', fitTableroSoon);
+  window.addEventListener('load', fitTableroSoon);
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) fitTableroSoon();
+  });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fitTablero);
+  fitTableroSoon();
 
   // Toggle de columnas Empezó / Terminó / Duración (el botón vive en el encabezado y se recrea con la tabla)
   (function setupFechasToggle() {
