@@ -2488,6 +2488,14 @@
     #tablaPage table.historial-table.hide-fechas td { padding: 7px 3px; }
     #tablaPage table.historial-table.hide-fechas th.col-x-header,
     #tablaPage table.historial-table.hide-fechas td.col-x-cell { font-size: 1.05rem !important; padding: 7px 3px !important; }
+    /* La columna PJ (Partidos Jugados) acumula totales de 3-4 dígitos —
+       mucho más ancho que el resto de las columnas de la fila (V, D, Q,
+       de 1-2 dígitos). Con la letra grande general de esta vista (1.12rem)
+       terminaba siendo, de lejos, la columna más ancha de la tabla justo
+       en el borde derecho, al punto de quedar cortada en el iPad real
+       aunque en el simulador entrara justo. Se le baja la letra para que
+       quede en línea con sus vecinas y sobre margen real a la derecha. */
+    #tablaPage table.historial-table.hide-fechas td.col-jugados { font-size: 0.92rem !important; padding: 7px 2px !important; }
     #tablaPage table.historial-table.hide-fechas th.col-bar-header,
     #tablaPage table.historial-table.hide-fechas td.col-bar { width: 32px !important; min-width: 32px !important; max-width: 32px !important; }
     #tablaPage table.historial-table.hide-fechas .pts-bar { width: 30px !important; min-width: 30px !important; max-width: 30px !important; font-size: 0.95rem; }
