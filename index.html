@@ -1654,6 +1654,26 @@
   .mpb-list li { line-height: 1.35; }
   .mpb-list .mpb-empty { font-weight: 500; opacity: 0.65; font-style: italic; }
   .mpb-total { font-weight: 900; font-size: 1.05rem; border-top: 2px solid currentColor; padding-top: 5px; margin-top: 2px; }
+  /* Datos crudos del partido (vergas, borres, dormidas, tiros, tableros),
+     debajo del desglose de puntos de campeonato, para que el resumen de
+     fin de partido también cuente cómo se jugó, no solo cuánto sumó. */
+  .mpb-stats {
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px dashed currentColor;
+    opacity: 0.9;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mpb-stats-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.78rem;
+  }
+  .mpb-stats-row .mpb-stats-label { font-weight: 600; opacity: 0.8; }
+  .mpb-stats-row .mpb-stats-val { font-weight: 900; }
 
   .edit-grid {
     display: grid;
@@ -2361,7 +2381,7 @@
        fijo (pinned) por encima del contador, así que hace falta reservar
        hueco extra abajo para que no tape filas reales de la tabla. */
     #tablaPage.has-points-box {
-      padding-bottom: 340px;
+      padding-bottom: 390px;
     }
     #tablaPage .tabla-footer {
       display: flex;
@@ -2402,6 +2422,8 @@
     #tablaPage .mpb-player { font-size: 0.82rem; margin-bottom: 2px; }
     #tablaPage .mpb-list { font-size: 0.74rem; margin-bottom: 3px; }
     #tablaPage .mpb-total { font-size: 0.92rem; padding-top: 4px; }
+    #tablaPage .mpb-stats { margin-top: 4px; padding-top: 4px; }
+    #tablaPage .mpb-stats-row { font-size: 0.7rem; }
     #tablaPage .footer-tools {
       display: grid;
       grid-template-columns: auto auto;
@@ -2870,11 +2892,13 @@
         <div class="mpb-player">Guido</div>
         <ul class="mpb-list" id="mpbListG"></ul>
         <div class="mpb-total" id="mpbTotalG"></div>
+        <div class="mpb-stats" id="mpbStatsG"></div>
       </div>
       <div class="mpb-col">
         <div class="mpb-player">Martín</div>
         <ul class="mpb-list" id="mpbListM"></ul>
         <div class="mpb-total" id="mpbTotalM"></div>
+        <div class="mpb-stats" id="mpbStatsM"></div>
       </div>
     </div>
   </div>
@@ -7395,7 +7419,13 @@ function buildHistorialTable() {
     }
     const breakdownG = computeMatchPointsDelta(prevPgG, prevQG, prevDG, row15.g);
     const breakdownM = computeMatchPointsDelta(prevPgM, prevQM, prevDM, row15.m);
-    showMatchPointsBox(gameWinner, breakdownG, breakdownM);
+    // Datos crudos de cómo se jugó este partido en particular (no acumulados
+    // de campeonato), para mostrarlos también en el cuadro resumen.
+    const matchStats = {
+      g: { vergas: game.g.v, borres: borresG, dormidas: game.g.dVal, tiros: tiroCountG, tableros: game.boardsWonG },
+      m: { vergas: game.m.v, borres: borresM, dormidas: game.m.dVal, tiros: tiroCountM, tableros: game.boardsWonM }
+    };
+    showMatchPointsBox(gameWinner, breakdownG, breakdownM, matchStats);
 
     buildRecordsPage();
     pauseTimerOnFinish();
@@ -7429,9 +7459,9 @@ function buildHistorialTable() {
 
   const MATCH_POINTS_BOX_KEY = 'quintina_match_points_box';
 
-  function showMatchPointsBox(gameWinner, breakdownG, breakdownM) {
-    saveMatchPointsBoxData({ gameWinner: gameWinner, breakdownG: breakdownG, breakdownM: breakdownM });
-    renderMatchPointsBox(gameWinner, breakdownG, breakdownM);
+  function showMatchPointsBox(gameWinner, breakdownG, breakdownM, matchStats) {
+    saveMatchPointsBoxData({ gameWinner: gameWinner, breakdownG: breakdownG, breakdownM: breakdownM, matchStats: matchStats });
+    renderMatchPointsBox(gameWinner, breakdownG, breakdownM, matchStats);
   }
 
   function renderMatchPointsCol(elListId, elTotalId, breakdown) {
@@ -7448,7 +7478,30 @@ function buildHistorialTable() {
     totalEl.textContent = 'Total: +' + breakdown.total + (breakdown.total === 1 ? ' punto' : ' puntos');
   }
 
-  function renderMatchPointsBox(gameWinner, breakdownG, breakdownM) {
+  // Datos crudos de cómo se jugó el partido (no los puntos de campeonato
+  // que aportó), para que el resumen de fin de partido también cuente la
+  // "foto" del partido en sí: vergas, borres, dormidas, tiros y tableros
+  // ganados por cada jugador.
+  const MPB_STATS_FIELDS = [
+    { key: 'tableros', label: 'Tableros ganados' },
+    { key: 'vergas', label: 'Vergas' },
+    { key: 'borres', label: 'Borres' },
+    { key: 'dormidas', label: 'Dormidas' },
+    { key: 'tiros', label: 'Tiros' }
+  ];
+
+  function renderMatchStatsCol(elId, stats) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!stats) { el.innerHTML = ''; return; }
+    el.innerHTML = MPB_STATS_FIELDS.map(function(f) {
+      const val = stats[f.key] || 0;
+      return '<div class="mpb-stats-row"><span class="mpb-stats-label">' + f.label +
+        '</span><span class="mpb-stats-val">' + val + '</span></div>';
+    }).join('');
+  }
+
+  function renderMatchPointsBox(gameWinner, breakdownG, breakdownM, matchStats) {
     const box = document.getElementById('matchPointsBox');
     if (!box) return;
     const title = gameWinner === 'G' ? '¡Guido ganó la partida!' :
@@ -7456,6 +7509,8 @@ function buildHistorialTable() {
     document.getElementById('mpbTitle').textContent = title;
     renderMatchPointsCol('mpbListG', 'mpbTotalG', breakdownG);
     renderMatchPointsCol('mpbListM', 'mpbTotalM', breakdownM);
+    renderMatchStatsCol('mpbStatsG', matchStats && matchStats.g);
+    renderMatchStatsCol('mpbStatsM', matchStats && matchStats.m);
     const colG = document.getElementById('mpbTotalG').closest('.mpb-col');
     const colM = document.getElementById('mpbTotalM').closest('.mpb-col');
     if (colG) {
@@ -7501,7 +7556,7 @@ function buildHistorialTable() {
     let data = null;
     try { data = JSON.parse(localStorage.getItem(MATCH_POINTS_BOX_KEY) || 'null'); } catch (e) {}
     if (data && data.breakdownG && data.breakdownM) {
-      renderMatchPointsBox(data.gameWinner, data.breakdownG, data.breakdownM);
+      renderMatchPointsBox(data.gameWinner, data.breakdownG, data.breakdownM, data.matchStats);
     }
   }
 
