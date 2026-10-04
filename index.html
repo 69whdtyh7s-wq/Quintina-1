@@ -181,11 +181,32 @@
     text-overflow: ellipsis;
   }
 
-  /* La última columna ("Tiros") queda debajo de la píldora fija de copia de
-     seguridad/ajustes en iPad: el texto se alinea a la izquierda de su
-     celda para que no quede tapado. */
-  th.title-cell.title-cell-last,
-  #mainPage th.title-cell.title-cell-last { text-align: left !important; padding-left: 35px !important; padding-right: 1px !important; }
+  /* La última celda del encabezado del Tablero ("Tiros") ya no muestra
+     texto: aloja en su lugar la píldora de guardar/ajustes (reubicada
+     acá en JS al mostrar el Tablero), que aprovecha todo el alto y ancho
+     de la celda en vez de flotar tapándola. En las demás pestañas la
+     píldora vuelve a flotar arriba a la derecha, con su tamaño de
+     siempre — esto no las afecta. */
+  #boardPillHost { padding: 0 !important; }
+  #boardPillHost #topActionsPill {
+    position: static;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  #boardPillHost #topActionsPill .pill-icon-btn {
+    flex: 1;
+    width: auto;
+    height: 100%;
+  }
+  #boardPillHost #topActionsPill .pill-icon-divider {
+    align-self: stretch;
+    margin: 3px 0;
+  }
 
   td.stat-cell {
     height: 32px;
@@ -3300,6 +3321,13 @@
           bar.appendChild(b);
         });
         th.appendChild(bar);
+      } else if (idx === BOARDS - 1) {
+        // La última celda ("Tiros") no muestra título: en la pestaña
+        // Tablero la ocupa la píldora de guardar/ajustes (ver
+        // showBoardPage/hideAllPages, que la reubican acá y la devuelven
+        // a flotar sobre las demás pestañas), aprovechando el espacio en
+        // vez de flotar tapándolo.
+        th.id = 'boardPillHost';
       } else {
         th.textContent = title;
       }
@@ -7720,6 +7748,7 @@ function buildHistorialTable() {
   }
 
   buildTitleRow();
+  moveTopPillIntoBoard();
   buildStatsRow();
   buildHeaderRow();
   buildCategoryRows();
@@ -7760,6 +7789,21 @@ function buildHistorialTable() {
   const galeriaPage = document.getElementById('galeriaPage');
   const statsPage = document.getElementById('statsPage');
 
+  // En la pestaña Tablero, la píldora de guardar/ajustes se reubica
+  // dentro de la celda "Tiros" del encabezado (que no muestra texto) en
+  // vez de flotar tapándola; en el resto de las pestañas vuelve a flotar
+  // arriba a la derecha, del mismo tamaño de siempre. Mover el elemento
+  // real (no una copia) evita duplicar ids y conserva sus eventos.
+  function moveTopPillIntoBoard() {
+    const host = document.getElementById('boardPillHost');
+    const pill = document.getElementById('topActionsPill');
+    if (host && pill && pill.parentElement !== host) host.appendChild(pill);
+  }
+  function moveTopPillOutOfBoard() {
+    const pill = document.getElementById('topActionsPill');
+    if (pill && pill.parentElement !== document.body) document.body.appendChild(pill);
+  }
+
   // El bloqueo de scroll vertical de la pestaña Tablero se resuelve solo
   // con CSS, a partir de la clase "hidden" de #mainPage que esta misma
   // función ya controla (ver el selector "#mainPage:not(.hidden)" arriba
@@ -7770,6 +7814,16 @@ function buildHistorialTable() {
     tablaPage.classList.add('hidden');
     galeriaPage.classList.add('hidden');
     statsPage.classList.add('hidden');
+    moveTopPillOutOfBoard();
+  }
+
+  // Punto único para volver a la pestaña Tablero: oculta las demás
+  // pestañas y reubica la píldora de guardar/ajustes dentro del
+  // encabezado del tablero.
+  function showBoardPage() {
+    hideAllPages();
+    mainPage.classList.remove('hidden');
+    moveTopPillIntoBoard();
   }
 
   // (Antes había acá un listener de touchmove en JS que cancelaba el gesto
@@ -7810,8 +7864,7 @@ function buildHistorialTable() {
   });
 
   document.getElementById('recordsToBoard').addEventListener('click', function() {
-    hideAllPages();
-    mainPage.classList.remove('hidden');
+    showBoardPage();
   });
 
   document.getElementById('recordsToTabla').addEventListener('click', function() {
@@ -7829,8 +7882,7 @@ function buildHistorialTable() {
   });
 
   document.getElementById('tablaToBoard').addEventListener('click', function() {
-    hideAllPages();
-    mainPage.classList.remove('hidden');
+    showBoardPage();
   });
 
   document.getElementById('tablaToRecords').addEventListener('click', function() {
@@ -7848,8 +7900,7 @@ function buildHistorialTable() {
   });
 
   document.getElementById('galeriaToBoard').addEventListener('click', function() {
-    hideAllPages();
-    mainPage.classList.remove('hidden');
+    showBoardPage();
   });
 
   document.getElementById('galeriaToTabla').addEventListener('click', function() {
@@ -7867,8 +7918,7 @@ function buildHistorialTable() {
   });
 
   document.getElementById('statsToBoard').addEventListener('click', function() {
-    hideAllPages();
-    mainPage.classList.remove('hidden');
+    showBoardPage();
   });
 
   document.getElementById('statsToTabla').addEventListener('click', function() {
@@ -7969,8 +8019,7 @@ function buildHistorialTable() {
       clearBoardOnly(false);
       buildRecordsPage();
       updateRecordsAlertButton();
-      hideAllPages();
-      mainPage.classList.remove('hidden');
+      showBoardPage();
     });
   });
 
