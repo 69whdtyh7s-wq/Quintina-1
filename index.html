@@ -203,6 +203,10 @@
     width: auto;
     height: 100%;
   }
+  #boardPillHost #topActionsPill .pill-icon-btn svg {
+    width: 15px;
+    height: 15px;
+  }
   #boardPillHost #topActionsPill .pill-icon-divider {
     align-self: stretch;
     margin: 3px 0;
@@ -1042,8 +1046,8 @@
     font-family: inherit;
     background: transparent;
     border: none;
-    width: 40px;
-    height: 34px;
+    width: 54px;
+    height: 46px;
     color: var(--ink);
     display: flex;
     align-items: center;
@@ -1052,9 +1056,11 @@
     touch-action: manipulation;
     padding: 0;
   }
-  .pill-icon-btn svg { width: 17px; height: 17px; }
+  .pill-icon-btn svg { width: 23px; height: 23px; }
   .pill-icon-btn.is-saved { background: var(--rec-green, #c3e3b8); }
-  .pill-icon-divider { width: 2px; align-self: stretch; margin: 6px 0; background: var(--ink); opacity: 0.25; }
+  .pill-icon-btn:active { background: var(--accent); color: var(--paper); border-radius: 999px; }
+  .pill-icon-btn.is-saved:active { background: var(--accent); color: var(--paper); border-radius: 999px; }
+  .pill-icon-divider { width: 2px; align-self: stretch; margin: 8px 0; background: var(--ink); opacity: 0.25; }
   /* Ajustes: tarjeta estilo "hoja de ajustes" moderna, con sus propias
      clases para no afectar el resto de las ventanas flotantes de la app. */
   #ajustesModal .ajustes-card {
@@ -2192,17 +2198,10 @@
     }
   }
 
-  /* iPad 5ª gen vertical: en este ancho la tabla del Tablero llega casi
-     hasta el borde derecho, y la píldora flotante de guardar/ajustes
-     (fija arriba a la derecha) tapaba el número de la fila de "Tiros"
-     que queda justo debajo del toolbar. Se achica un poco la píldora
-     en este breakpoint para que quede arriba del todo, sin invadir esa
-     fila. */
-  @media (orientation: portrait) and (max-width: 768px) {
-    #topActionsPill { top: max(4px, env(safe-area-inset-top)); }
-    #topActionsPill .pill-icon-btn { height: 26px; }
-    #topActionsPill .pill-icon-divider { margin: 4px 0; }
-  }
+  /* (El achique de la píldora flotante en este breakpoint ya no hace
+     falta: en Tablero la píldora ahora se aloja dentro de la celda
+     "Tiros" del encabezado en vez de flotar sobre ella, así que no hay
+     más riesgo de que tape esa fila en ninguna pestaña.) */
 
   /* Galería: en iPad 5ta generación (768x1024) queremos siempre 3 fotos
      por fila, en vez de que el ancho decida cuántas entran solas. */
