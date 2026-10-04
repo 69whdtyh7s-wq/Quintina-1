@@ -1038,6 +1038,9 @@
     flex-direction: column;
     overflow: hidden;
   }
+  /* La tarjeta recorta lo que sobresale (overflow:hidden), así que la cruz
+     va dentro de ella, no a medio salir por la esquina. */
+  .galeria-lightbox-card .modal-x { top: 8px; right: 8px; width: 36px; height: 36px; box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
   .galeria-lightbox-card img { max-width: 90vw; max-height: 58vh; object-fit: contain; border-radius: 8px; display: block; margin: 0 auto; }
   .galeria-lightbox-comments { width: 100%; max-width: 460px; margin: 10px auto 0; text-align: left; overflow-y: auto; max-height: 28vh; }
   .galeria-comment-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
