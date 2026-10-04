@@ -440,12 +440,17 @@
   }
 
   .timer-btn {
+    -webkit-appearance: none;
+    appearance: none;
     font-family: inherit;
     background: var(--paper);
     border: 2px solid var(--ink);
     color: var(--ink);
     width: 34px;
     height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
     border-radius: 50%;
     font-size: 0.95rem;
     line-height: 1;
@@ -455,7 +460,7 @@
     justify-content: center;
     touch-action: manipulation;
   }
-  .timer-btn svg { width: 15px; height: 15px; }
+  .timer-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 
   .timer-btn:active {
