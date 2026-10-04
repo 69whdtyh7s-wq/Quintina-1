@@ -6347,6 +6347,19 @@
     document.getElementById('recEditDate').value = date;
     document.getElementById('recEditCheck').checked = checked;
     document.getElementById('recEditModal').classList.remove('hidden');
+
+    // En iPad, si se abre esta ventana con el mouse/trackpad en vez de
+    // con el dedo, tocar después el campo de texto a veces no alcanza
+    // para que aparezca el teclado en pantalla. Enfocamos el campo
+    // principal nosotros mismos, en el mismo gesto que abrió la
+    // ventana, para que el teclado aparezca siempre.
+    const focusTarget = (valWrap.style.display !== 'none') ? document.getElementById('recEditValue') : null;
+    if (focusTarget) {
+      setTimeout(function() {
+        focusTarget.focus();
+        if (typeof focusTarget.select === 'function') focusTarget.select();
+      }, 0);
+    }
   }
 
   function closeRecEdit() {
