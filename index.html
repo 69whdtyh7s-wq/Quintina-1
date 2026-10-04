@@ -16,6 +16,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Evita que iOS Safari agrande el texto por su cuenta (su "ajuste de
+     tamaño de texto" automático), que puede hacer que la letra se vea más
+     grande de lo que el CSS pide y empuje contenido fuera de la pantalla
+     (p.ej. la columna PJ de Campeonatos) sin que se note en otros
+     navegadores donde ese comportamiento no existe. */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   :root {
     --paper: #f6f1de;
     --ink: #1d1b16;
@@ -2485,7 +2494,7 @@
     #tablaPage table.historial-table.hide-fechas { font-size: 1.12rem; }
     #tablaPage table.historial-table.hide-fechas th:not(.player-header) { font-size: 0.95rem; padding: 6px 2px; }
     #tablaPage table.historial-table.hide-fechas th.player-header { font-size: 1.4rem; padding: 7px !important; }
-    #tablaPage table.historial-table.hide-fechas td { padding: 7px 3px; }
+    #tablaPage table.historial-table.hide-fechas td { padding: 7px 2px; }
     #tablaPage table.historial-table.hide-fechas th.col-x-header,
     #tablaPage table.historial-table.hide-fechas td.col-x-cell { font-size: 1.05rem !important; padding: 7px 3px !important; }
     /* La columna PJ (Partidos Jugados) acumula totales de 3-4 dígitos —
