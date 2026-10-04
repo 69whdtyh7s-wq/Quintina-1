@@ -993,6 +993,17 @@
   .stats-tooltip .stt-dates { opacity: 0.75; margin-bottom: 6px; font-size: 0.68rem; }
   .stats-tooltip .stt-row { display: flex; align-items: center; gap: 6px; }
   .stats-tooltip .stt-key { width: 10px; height: 2px; border-radius: 1px; display: inline-block; }
+  .stats-bar-val { font-size: 9px; font-weight: 800; fill: var(--ink); font-family: inherit; }
+  .stats-zero-line { stroke: var(--ink); stroke-width: 1.2; opacity: 0.55; }
+  .stats-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 0 0 14px; }
+  .stats-kpi { border: 2px solid var(--ink); border-radius: 6px; padding: 8px 6px; text-align: center; background: var(--paper); }
+  .stats-kpi-label { font-size: 0.72rem; font-weight: 800; color: var(--divider); line-height: 1.2; }
+  .stats-kpi-vals { display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-top: 4px; font-weight: 900; font-size: 1.35rem; }
+  .stats-kpi-vals .kg { color: var(--stat-g); }
+  .stats-kpi-vals .km { color: var(--stat-m); }
+  .stats-kpi-vals .ksep { font-size: 0.9rem; opacity: 0.5; }
+  .stats-kpi-note { font-size: 0.68rem; opacity: 0.65; margin-top: 2px; }
+  .stats-empty-note { text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--divider); margin: 4px 0 2px; }
   @media (max-width: 600px) {
     .stats-card { padding: 12px 8px 16px; }
     .stats-card h3 { font-size: 0.98rem; }
@@ -3252,6 +3263,19 @@
   let historyStack = [];
   let redoStack = [];
   let finishSnapshot = null;
+
+  // Registro de cada partida terminada (para las gráficas de Estadísticas que
+  // necesitan datos por partida, como borres y tiros). Se llena desde que se
+  // instala esta versión; las partidas anteriores no tienen este detalle.
+  const GAMES_LOG_KEY = 'quintina_games_log';
+  let GAMES_LOG = [];
+  try {
+    const rawGamesLog = localStorage.getItem(GAMES_LOG_KEY);
+    if (rawGamesLog) { const pg = JSON.parse(rawGamesLog); if (Array.isArray(pg)) GAMES_LOG = pg; }
+  } catch (e) {}
+  function saveGamesLog() {
+    try { localStorage.setItem(GAMES_LOG_KEY, JSON.stringify(GAMES_LOG)); } catch (e) {}
+  }
   let newChampSnapshot = null;
   let timerElapsedMs = 0;
   let timerRunning = false;
@@ -6087,6 +6111,260 @@
     return html;
   }
 
+
+  // ===== Estadísticas extra (gráficos) =====
+  const XS = { W: 900, H: 260, padL: 42, padR: 16, padT: 18, padB: 30 };
+  const XS_STEPS = [0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
+  function xsStep(x) {
+    for (let i = 0; i < XS_STEPS.length; i++) if (XS_STEPS[i] >= x) return XS_STEPS[i];
+    return XS_STEPS[XS_STEPS.length - 1];
+  }
+  function xsFmtNum(v, decimals) {
+    const d = decimals || 0;
+    return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d).replace('.', ',');
+  }
+  function xsCardHtml(title, subtitle, innerHtml, legendHtml) {
+    return '<div class="stats-card"><h3>' + title + '</h3>' +
+      (subtitle ? '<p class="stats-subtitle">' + subtitle + '</p>' : '') +
+      innerHtml + (legendHtml || '') + '</div>';
+  }
+  function xsLegendHtml(items) {
+    return '<div class="stats-legend">' + items.map(function(it) {
+      return '<div class="stats-legend-item"><span class="stats-legend-swatch" style="background:' + it.color + ';' + (it.block ? 'height:10px;' : '') + '"></span>' + it.label + '</div>';
+    }).join('') + '</div>';
+  }
+  const XS_LEG_GM = [
+    { color: 'var(--stat-g)', label: 'Guido' },
+    { color: 'var(--stat-m)', label: 'Martín' }
+  ];
+  function xsAxes(labels, lo, hi, step, decimals, xAt, yAt) {
+    let out = '';
+    for (let v = lo; v <= hi + 1e-9; v += step) {
+      const y = yAt(v).toFixed(1);
+      out += '<line x1="' + XS.padL + '" y1="' + y + '" x2="' + (XS.W - XS.padR) + '" y2="' + y + '" class="stats-grid-line"/>';
+      out += '<text x="' + (XS.padL - 7) + '" y="' + (parseFloat(y) + 4) + '" text-anchor="end" class="stats-axis-label">' + xsFmtNum(v, decimals) + '</text>';
+    }
+    const skip = labels.length > 20 ? Math.ceil(labels.length / 20) : 1;
+    labels.forEach(function(lb, i) {
+      if (i % skip !== 0) return;
+      out += '<text x="' + xAt(i).toFixed(1) + '" y="' + (XS.H - XS.padB + 18) + '" text-anchor="middle" class="stats-axis-label">' + lb + '</text>';
+    });
+    return out;
+  }
+  // Barras agrupadas (1 o 2 series). opts: signed, decimals, fmt, colorFn, titles(i, si)
+  function xsBarChart(labels, series, opts) {
+    opts = opts || {};
+    const pw = XS.W - XS.padL - XS.padR, ph = XS.H - XS.padT - XS.padB, n = labels.length;
+    const all = [];
+    series.forEach(function(s) { s.vals.forEach(function(v) { if (v !== null && v !== undefined) all.push(v); }); });
+    let lo = 0, hi, step;
+    if (opts.signed) {
+      const m = Math.max(1, Math.max.apply(null, all.map(Math.abs)));
+      step = xsStep(m / 2); lo = -2 * step; hi = 2 * step;
+    } else {
+      const m = Math.max(1, Math.max.apply(null, all));
+      step = xsStep(m / 5); hi = Math.ceil(m / step - 1e-9) * step;
+    }
+    const decimals = opts.decimals || 0;
+    const yAt = function(v) { return XS.padT + ph - ((v - lo) / (hi - lo)) * ph; };
+    const groupW = pw / n;
+    const xAt = function(i) { return XS.padL + groupW * i + groupW / 2; };
+    const barW = Math.min(30, groupW * 0.8 / series.length);
+    const fmt = opts.fmt || function(v) { return xsFmtNum(v, decimals); };
+    let out = xsAxes(labels, lo, hi, step, decimals, xAt, yAt);
+    const y0 = yAt(0);
+    if (opts.signed) out += '<line x1="' + XS.padL + '" y1="' + y0.toFixed(1) + '" x2="' + (XS.W - XS.padR) + '" y2="' + y0.toFixed(1) + '" class="stats-zero-line"/>';
+    labels.forEach(function(lb, i) {
+      series.forEach(function(s, si) {
+        const v = s.vals[i];
+        if (v === null || v === undefined) return;
+        const x = xAt(i) - (series.length * barW) / 2 + si * barW;
+        const yv = yAt(v);
+        const top = Math.min(yv, y0), h = Math.max(1.5, Math.abs(yv - y0));
+        const color = opts.colorFn ? opts.colorFn(v, i) : s.color;
+        const op = (s.opacityAt && s.opacityAt(i) !== undefined) ? s.opacityAt(i) : 1;
+        const tip = lb + (s.name ? ' · ' + s.name : '') + ': ' + fmt(v);
+        out += '<g><title>' + tip + '</title><rect x="' + (x + 1).toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + Math.max(2, barW - 2).toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2" fill="' + color + '" opacity="' + op + '"/></g>';
+        if (n <= 24) {
+          const ty = v >= 0 ? top - 3 : top + h + 10;
+          out += '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="middle" class="stats-bar-val">' + fmt(v) + '</text>';
+        }
+      });
+    });
+    return '<div class="stats-chart-wrap"><svg class="stats-chart-svg" viewBox="0 0 ' + XS.W + ' ' + XS.H + '" preserveAspectRatio="xMidYMid meet">' + out + '</svg></div>';
+  }
+  // Líneas con puntos (1 o más series; null corta la serie)
+  function xsLineChart(labels, series, opts) {
+    opts = opts || {};
+    const pw = XS.W - XS.padL - XS.padR, ph = XS.H - XS.padT - XS.padB, n = labels.length;
+    const all = [];
+    series.forEach(function(s) { s.vals.forEach(function(v) { if (v !== null && v !== undefined) all.push(v); }); });
+    const m = Math.max(1, Math.max.apply(null, all));
+    const step = xsStep(m / 5), hi = Math.ceil(m / step - 1e-9) * step, lo = 0;
+    const decimals = opts.decimals || 0;
+    const yAt = function(v) { return XS.padT + ph - ((v - lo) / (hi - lo)) * ph; };
+    const xAt = function(i) { return n > 1 ? XS.padL + 10 + i * ((pw - 24) / (n - 1)) : XS.padL + pw / 2; };
+    let out = xsAxes(labels, lo, hi, step, decimals, xAt, yAt);
+    const usedLabelYs = [];
+    series.forEach(function(s) {
+      let d = '', pen = false;
+      s.vals.forEach(function(v, i) {
+        if (v === null || v === undefined) { pen = false; return; }
+        d += (pen ? ' L' : ' M') + xAt(i).toFixed(1) + ',' + yAt(v).toFixed(1);
+        pen = true;
+      });
+      out += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      let lastI = -1;
+      s.vals.forEach(function(v, i) {
+        if (v === null || v === undefined) return;
+        lastI = i;
+        const tip = labels[i] + ' · ' + s.name + ': ' + xsFmtNum(v, decimals);
+        out += '<g><title>' + tip + '</title><circle cx="' + xAt(i).toFixed(1) + '" cy="' + yAt(v).toFixed(1) + '" r="' + (n > 30 ? 2.5 : 4) + '" fill="' + s.color + '" stroke="var(--paper)" stroke-width="1.5"/></g>';
+      });
+      if (lastI >= 0) {
+        let ly = yAt(s.vals[lastI]) + 4;
+        usedLabelYs.forEach(function(u) { if (Math.abs(ly - u) < 13) ly = u - 13; });
+        usedLabelYs.push(ly);
+        out += '<text x="' + (xAt(lastI) + 7).toFixed(1) + '" y="' + ly.toFixed(1) + '" font-size="12" font-weight="900" fill="var(--ink)">' + xsFmtNum(s.vals[lastI], decimals) + '</text>';
+      }
+    });
+    return '<div class="stats-chart-wrap"><svg class="stats-chart-svg" viewBox="0 0 ' + XS.W + ' ' + XS.H + '" preserveAspectRatio="xMidYMid meet">' + out + '</svg></div>';
+  }
+  function xsKpiHtml(label, g, m, note) {
+    const single = (m === null || m === undefined || m === '');
+    return '<div class="stats-kpi"><div class="stats-kpi-label">' + label + '</div>' +
+      '<div class="stats-kpi-vals">' + (single
+        ? '<span>' + g + '</span>'
+        : '<span class="kg">' + g + '</span><span class="ksep">·</span><span class="km">' + m + '</span>') + '</div>' +
+      (note ? '<div class="stats-kpi-note">' + note + '</div>' : '') + '</div>';
+  }
+
+  function buildExtraStatsHtml() {
+    if (!HISTORIAL.length) return '';
+    const labels = HISTORIAL.map(function(r, i) { return 'C' + (i + 1); });
+    const closed = function(i) { return i < currentRowIndex; };
+    const todayStr = getFormattedTodayDate();
+    const cG = 'var(--stat-g)', cM = 'var(--stat-m)';
+    let html = '';
+
+    // 1) Victorias acumuladas
+    let accPG = 0, accPM = 0, accCG = 0, accCM = 0, empates = 0, champEmpates = 0;
+    const pgG = [], pgM = [], chG = [], chM = [];
+    HISTORIAL.forEach(function(r, i) {
+      accPG += (r.g.pg || 0); accPM += (r.m.pg || 0);
+      empates += (r.x || 0);
+      pgG.push(accPG); pgM.push(accPM);
+      if (closed(i)) {
+        if ((r.g.pts || 0) > (r.m.pts || 0)) accCG++;
+        else if ((r.m.pts || 0) > (r.g.pts || 0)) accCM++;
+        else champEmpates++;
+        chG.push(accCG); chM.push(accCM);
+      } else { chG.push(null); chM.push(null); }
+    });
+    const kpis1 =
+      '<div class="stats-kpis">' +
+        xsKpiHtml('Campeonatos ganados', accCG, accCM, champEmpates ? champEmpates + ' empatado' + (champEmpates > 1 ? 's' : '') : 'cerrados') +
+        xsKpiHtml('Partidas ganadas', accPG, accPM, empates + ' empate' + (empates === 1 ? '' : 's')) +
+      '</div>';
+    html += xsCardHtml('Victorias acumuladas', 'Campeonatos cerrados y partidas ganadas, sumando a lo largo del tiempo',
+      kpis1 +
+      '<p class="stats-subtitle" style="margin:0 0 4px;">Campeonatos ganados</p>' +
+      xsLineChart(labels, [{ name: 'Guido', color: cG, vals: chG }, { name: 'Martín', color: cM, vals: chM }]) +
+      '<p class="stats-subtitle" style="margin:14px 0 4px;">Partidas ganadas</p>' +
+      xsLineChart(labels, [{ name: 'Guido', color: cG, vals: pgG }, { name: 'Martín', color: cM, vals: pgM }]),
+      xsLegendHtml(XS_LEG_GM));
+
+    // 2) Diferencia de puntos por campeonato
+    const diffs = HISTORIAL.map(function(r) { return (r.g.pts || 0) - (r.m.pts || 0); });
+    html += xsCardHtml('Diferencia de puntos por campeonato', 'Hacia arriba ganó Guido, hacia abajo ganó Martín' + (closed(HISTORIAL.length - 1) ? '' : ' · el último sigue en curso'),
+      xsBarChart(labels, [{ name: 'Diferencia (Guido − Martín)', vals: diffs, opacityAt: function(i) { return closed(i) ? 1 : 0.45; } }], {
+        signed: true,
+        colorFn: function(v) { return v > 0 ? cG : (v < 0 ? cM : 'var(--divider)'); },
+        fmt: function(v) { return (v > 0 ? '+' : '') + v; }
+      }),
+      xsLegendHtml([{ color: cG, label: 'Ganó Guido' }, { color: cM, label: 'Ganó Martín' }]));
+
+    // 3) Vergas por campeonato (las filas viejas no tienen ese dato)
+    const vG = HISTORIAL.map(function(r) { return (typeof r.g.v === 'number') ? r.g.v : null; });
+    const vM = HISTORIAL.map(function(r) { return (typeof r.m.v === 'number') ? r.m.v : null; });
+    const firstV = vG.findIndex(function(v) { return v !== null; });
+    html += xsCardHtml('Vergas por campeonato', firstV > 0 ? 'Total de cada campeonato · hay datos desde C' + (firstV + 1) : 'Total de cada campeonato',
+      xsBarChart(labels, [{ name: 'Guido', color: cG, vals: vG }, { name: 'Martín', color: cM, vals: vM }]),
+      xsLegendHtml(XS_LEG_GM));
+
+    // 4) Borres por campeonato (desde el registro por partida)
+    const bG = HISTORIAL.map(function() { return null; }), bM = HISTORIAL.map(function() { return null; });
+    GAMES_LOG.forEach(function(gm) {
+      const i = (gm.c || 0) - 1;
+      if (i < 0 || i >= bG.length) return;
+      bG[i] = (bG[i] || 0) + ((gm.g && gm.g.b) || 0);
+      bM[i] = (bM[i] || 0) + ((gm.m && gm.m.b) || 0);
+    });
+    if (GAMES_LOG.length === 0) {
+      html += xsCardHtml('Borres por campeonato', 'Total de cada campeonato',
+        '<p class="stats-empty-note">Todavía no hay datos: se empiezan a registrar con las partidas que termines desde ahora.</p>');
+    } else {
+      const firstB = bG.findIndex(function(v) { return v !== null; });
+      html += xsCardHtml('Borres por campeonato', 'Total de cada campeonato · registrado desde C' + (firstB + 1) + ' (' + GAMES_LOG.length + ' partida' + (GAMES_LOG.length === 1 ? '' : 's') + ')',
+        xsBarChart(labels, [{ name: 'Guido', color: cG, vals: bG }, { name: 'Martín', color: cM, vals: bM }]),
+        xsLegendHtml(XS_LEG_GM));
+    }
+
+    // 5) Dormidas por campeonato
+    html += xsCardHtml('Dormidas por campeonato', 'Total de cada campeonato',
+      xsBarChart(labels, [
+        { name: 'Guido', color: cG, vals: HISTORIAL.map(function(r) { return r.g.d || 0; }) },
+        { name: 'Martín', color: cM, vals: HISTORIAL.map(function(r) { return r.m.d || 0; }) }
+      ]),
+      xsLegendHtml(XS_LEG_GM));
+
+    // 6) Tiros por partida (últimas 40 partidas registradas)
+    if (GAMES_LOG.length === 0) {
+      html += xsCardHtml('Tiros por partida', 'Últimas partidas registradas',
+        '<p class="stats-empty-note">Todavía no hay datos: se empiezan a registrar con las partidas que termines desde ahora.</p>');
+    } else {
+      const recent = GAMES_LOG.slice(-40);
+      const offset = GAMES_LOG.length - recent.length;
+      const gl = recent.map(function(gm, i) { return '#' + (offset + i + 1); });
+      const tG = recent.map(function(gm) { return (gm.g && gm.g.t) || 0; });
+      const tM = recent.map(function(gm) { return (gm.m && gm.m.t) || 0; });
+      const avg = function(arr) { return arr.length ? arr.reduce(function(a, b) { return a + b; }, 0) / arr.length : 0; };
+      const kpis6 = '<div class="stats-kpis">' +
+        xsKpiHtml('Tiros promedio por partida', xsFmtNum(avg(tG), 1), xsFmtNum(avg(tM), 1), 'en las últimas ' + recent.length) +
+        xsKpiHtml('Tiros promedio totales', xsFmtNum(avg(tG) + avg(tM), 1), '', 'entre los dos jugadores') +
+      '</div>';
+      html += xsCardHtml('Tiros por partida', 'Tiros de cada jugador en sus últimas ' + recent.length + ' partidas registradas',
+        kpis6 + xsLineChart(gl, [{ name: 'Guido', color: cG, vals: tG }, { name: 'Martín', color: cM, vals: tM }]),
+        xsLegendHtml(XS_LEG_GM));
+    }
+
+    // 7) Rachas (indicadores)
+    const curRow = HISTORIAL[currentRowIndex];
+    const rachaRow = findRecordRowById('racha_partidos_ganados');
+    const bestOf = function(side) { return (rachaRow && rachaRow[side] && rachaRow[side].v) ? (parseInt(rachaRow[side].v, 10) || 0) : 0; };
+    const bestDate = function(side) { return (rachaRow && rachaRow[side] && rachaRow[side].d) ? rachaRow[side].d : ''; };
+    html += xsCardHtml('Rachas de partidas ganadas', 'Partidas ganadas seguidas, sin perder ninguna en el medio',
+      '<div class="stats-kpis">' +
+        xsKpiHtml('Racha actual', (curRow && curRow.g.racha) || 0, (curRow && curRow.m.racha) || 0, 'campeonato en curso') +
+        xsKpiHtml('Mejor racha histórica', bestOf('g'), bestOf('m'), [bestDate('g'), bestDate('m')].filter(Boolean).join(' · ')) +
+      '</div>',
+      xsLegendHtml(XS_LEG_GM));
+
+    // 8) Duración de los campeonatos (años)
+    const durs = HISTORIAL.map(function(r, i) {
+      const d = diffYearsNumeric(r.empezo, closed(i) ? r.termino : todayStr);
+      return (d === null || d < 0) ? null : d;
+    });
+    html += xsCardHtml('Duración de los campeonatos', 'Años que duró cada uno' + (closed(HISTORIAL.length - 1) ? '' : ' · el último sigue en curso'),
+      xsBarChart(labels, [{ name: 'Duración (años)', color: 'var(--accent)', vals: durs, opacityAt: function(i) { return closed(i) ? 1 : 0.45; } }], {
+        decimals: 1,
+        fmt: function(v) { return xsFmtNum(v, 1) + (v === 1 ? '' : ''); }
+      }),
+      xsLegendHtml([{ color: 'var(--accent)', label: 'Años', block: true }]));
+
+    return html;
+  }
+
   function buildStatsPage() {
     const body = document.getElementById('statsBody');
     if (!body) return;
@@ -6196,6 +6474,7 @@
           '<div class="stats-legend-item"><span class="stats-legend-swatch" style="background:var(--stat-m);"></span>Martín</div>' +
         '</div>' +
       '</div>' +
+      buildExtraStatsHtml() +
       buildHitosCardHtml();
 
     const wrap = body.querySelector('.stats-chart-wrap');
@@ -6573,7 +6852,7 @@
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
   // --- Copia de seguridad (botón Guardar en Records y Campeonatos) ---
-  const BACKUP_KEYS = ['quintina_records_data', 'quintina_historial_state', 'quintina_paliza_comments', 'quintina_single_rec_comments', 'quintina_speed_records', 'quintina_hide_fechas', 'quintina_gallery', 'quintina_theme'];
+  const BACKUP_KEYS = ['quintina_records_data', 'quintina_historial_state', 'quintina_paliza_comments', 'quintina_single_rec_comments', 'quintina_speed_records', 'quintina_hide_fechas', 'quintina_gallery', 'quintina_theme', 'quintina_games_log'];
 
   function buildBackupText() {
     try { saveRecordsData(); } catch (e) {}
@@ -7389,6 +7668,7 @@ function buildHistorialTable() {
       victoriaDifVergasRow: JSON.parse(JSON.stringify(findRecordRowById('victoria_mas_dif_vergas_contra') || {})),
       ganadorMenosTirosRow: JSON.parse(JSON.stringify(findRecordRowById('partido_ganador_menos_tiros') || {})),
       quintinaTresDormidasRow: JSON.parse(JSON.stringify(findRecordRowById('quintina_tres_dormidas') || {})),
+      gamesLogLen: GAMES_LOG.length,
       vergaStreakG: vergaStreakG,
       vergaStreakM: vergaStreakM,
       maxVergaStreakG: maxVergaStreakG,
@@ -7502,6 +7782,17 @@ function buildHistorialTable() {
       g: { vergas: game.g.v, borres: borresG, dormidas: game.g.dVal, tiros: tiroCountG, tableros: game.boardsWonG },
       m: { vergas: game.m.v, borres: borresM, dormidas: game.m.dVal, tiros: tiroCountM, tableros: game.boardsWonM }
     };
+    let gameMs = 0;
+    try { gameMs = currentTimerElapsedMs() || 0; } catch (e) {}
+    GAMES_LOG.push({
+      c: currentRowIndex + 1,
+      t: Date.now(),
+      w: gameWinner || '',
+      ms: gameMs,
+      g: { v: game.g.v, b: borresG, d: game.g.dVal, t: tiroCountG, tb: game.boardsWonG },
+      m: { v: game.m.v, b: borresM, d: game.m.dVal, t: tiroCountM, tb: game.boardsWonM }
+    });
+    saveGamesLog();
     showMatchPointsBox(gameWinner, breakdownG, breakdownM, matchStats);
 
     buildRecordsPage();
@@ -7700,6 +7991,7 @@ function buildHistorialTable() {
       HISTORIAL[snap.rowIndex] = snap.row15;
       currentRowIndex = snap.rowIndex;
       saveRow15State();
+      if (typeof snap.gamesLogLen === 'number' && GAMES_LOG.length > snap.gamesLogLen) { GAMES_LOG.length = snap.gamesLogLen; saveGamesLog(); }
 
       const vRow = findRecordRowById('vergas_en_un_partido');
       if (vRow && snap.vergasRow) { vRow.g = snap.vergasRow.g; vRow.m = snap.vergasRow.m; }
