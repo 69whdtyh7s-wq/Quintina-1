@@ -5777,7 +5777,9 @@
     root.querySelectorAll('[data-del-comment]').forEach(function(el) {
       el.addEventListener('click', function() {
         const parts = el.dataset.delComment.split('|');
-        deleteGaleriaComment(parts[0], parseInt(parts[1], 10));
+        showConfirmModal('¿Eliminar este comentario?', function() {
+          deleteGaleriaComment(parts[0], parseInt(parts[1], 10));
+        });
       });
     });
     root.querySelectorAll('[data-edit-comment]').forEach(function(el) {
