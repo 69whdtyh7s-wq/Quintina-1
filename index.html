@@ -80,6 +80,14 @@
     justify-content: flex-start;
   }
 
+  /* Pestaña Tablero: nunca permite scroll vertical (el tamaño de las
+     celdas ya se calcula para entrar en la altura de la pantalla). Se
+     agrega/quita del <body> al cambiar de pestaña; las demás pestañas
+     sí necesitan poder desplazarse verticalmente. */
+  body.board-no-vscroll {
+    overflow-y: hidden;
+  }
+
   .app-header {
     margin-bottom: 12px;
     text-align: center;
@@ -2150,7 +2158,11 @@
 
   /* ===== iPad 5ª gen: Tablero escalado (mismas proporciones) ===== */
   :root { --k: 1; }
-  html, body { overflow-x: hidden !important; overflow-y: auto !important; }
+  html, body { overflow-x: hidden !important; }
+  /* La pestaña Tablero nunca scrollea verticalmente; las demás pestañas
+     sí pueden, si su contenido no entra en la altura de la pantalla. */
+  body:not(.board-no-vscroll) { overflow-y: auto !important; }
+  body.board-no-vscroll { overflow-y: hidden !important; }
   body { padding: 2px 0 !important; }
   .app-header { display: none !important; }
   #mainPage .board-scroll {
@@ -2758,7 +2770,7 @@
   .theme-opt-btn.is-active .theme-opt-swatch { border-color: var(--paper); }
 </style>
 </head>
-<body>
+<body class="board-no-vscroll">
 
 <div id="mainPage">
   <div class="board-scroll">
@@ -7612,6 +7624,9 @@ function buildHistorialTable() {
     tablaPage.classList.add('hidden');
     galeriaPage.classList.add('hidden');
     statsPage.classList.add('hidden');
+    // Solo la pestaña Tablero bloquea el scroll vertical; las demás
+    // (Campeonatos, Records, Estadísticas, Galería) lo necesitan.
+    document.body.classList.remove('board-no-vscroll');
   }
 
   function showTablaPage() {
@@ -7645,6 +7660,7 @@ function buildHistorialTable() {
   document.getElementById('recordsToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
+    document.body.classList.add('board-no-vscroll');
   });
 
   document.getElementById('recordsToTabla').addEventListener('click', function() {
@@ -7664,6 +7680,7 @@ function buildHistorialTable() {
   document.getElementById('tablaToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
+    document.body.classList.add('board-no-vscroll');
   });
 
   document.getElementById('tablaToRecords').addEventListener('click', function() {
@@ -7683,6 +7700,7 @@ function buildHistorialTable() {
   document.getElementById('galeriaToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
+    document.body.classList.add('board-no-vscroll');
   });
 
   document.getElementById('galeriaToTabla').addEventListener('click', function() {
@@ -7702,6 +7720,7 @@ function buildHistorialTable() {
   document.getElementById('statsToBoard').addEventListener('click', function() {
     hideAllPages();
     mainPage.classList.remove('hidden');
+    document.body.classList.add('board-no-vscroll');
   });
 
   document.getElementById('statsToTabla').addEventListener('click', function() {
@@ -7804,6 +7823,7 @@ function buildHistorialTable() {
       updateRecordsAlertButton();
       hideAllPages();
       mainPage.classList.remove('hidden');
+      document.body.classList.add('board-no-vscroll');
     });
   });
 
