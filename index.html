@@ -924,6 +924,22 @@
   .pill-icon-btn svg { width: calc(15px * var(--k, 1)); height: calc(15px * var(--k, 1)); }
   .pill-icon-btn:active { background: rgba(0,0,0,0.12); }
   .pill-icon-btn.is-saved { background: var(--rec-green, #c3e3b8); }
+  #navActionsPill {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    right: 10px;
+    z-index: 70;
+    display: flex;
+    align-items: stretch;
+    height: 36px;
+    width: 92px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  #navActionsPill .pill-icon-btn svg { width: 18px; height: 18px; }
+  #mainPage:not(.hidden) ~ #navActionsPill { display: none; }
   .pill-icon-divider { width: 2px; align-self: stretch; margin: 3px 0; background: var(--ink); opacity: 0.25; }
   .ajustes-menu { display: flex; flex-direction: column; gap: 10px; }
 
@@ -2622,6 +2638,12 @@
   </div>
 </div>
 
+<div id="navActionsPill" aria-label="Copia de seguridad y ajustes">
+  <button type="button" class="pill-icon-btn js-backup-btn" title="Descargar copia de seguridad" aria-label="Descargar copia de seguridad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>      <path d="M17 21v-8H7v8"/>      <path d="M7 3v5h8"/>    </svg></button>
+  <div class="pill-icon-divider"></div>
+  <button type="button" class="pill-icon-btn js-ajustes-btn" title="Ajustes" aria-label="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</div>
+
 <div id="recordsPage" class="hidden">
   <div class="page-tabs rec-tabs-bar">
     <div class="rec-search-wrap">
@@ -3000,9 +3022,9 @@
         const acts = document.createElement('div');
         acts.className = 'title-actions';
         acts.innerHTML =
-          '<button type="button" id="pillBackupBtn" class="pill-icon-btn" title="Descargar copia de seguridad" aria-label="Descargar copia de seguridad">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>      <path d="M17 21v-8H7v8"/>      <path d="M7 3v5h8"/>    </svg>'+'</button>'+
+          '<button type="button" id="pillBackupBtn" class="pill-icon-btn js-backup-btn" title="Descargar copia de seguridad" aria-label="Descargar copia de seguridad">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>      <path d="M17 21v-8H7v8"/>      <path d="M7 3v5h8"/>    </svg>'+'</button>'+
           '<div class="pill-icon-divider"></div>'+
-          '<button type="button" id="ajustesBtn" class="pill-icon-btn" title="Ajustes" aria-label="Ajustes">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'+'</button>';
+          '<button type="button" id="ajustesBtn" class="pill-icon-btn js-ajustes-btn" title="Ajustes" aria-label="Ajustes">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'+'</button>';
         th.appendChild(acts);
       } else {
         th.textContent = title;
@@ -5383,7 +5405,7 @@
       const tr0 = table.getBoundingClientRect();
       if (!tr0.width || !tr0.height) return null;
       const SC = 2, PAD = 10;
-      const W = Math.ceil(tr0.width), H = Math.ceil(tr0.height);
+      const W = Math.round(tr0.width), H = Math.round(tr0.height);
       const canvas = document.createElement('canvas');
       canvas.width = (W + PAD * 2) * SC; canvas.height = (H + PAD * 2) * SC;
       const ctx = canvas.getContext('2d');
@@ -5440,6 +5462,13 @@
         ctx.strokeStyle = l.col; ctx.lineWidth = l.w; ctx.lineCap = 'butt';
         ctx.beginPath(); ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); ctx.stroke();
       });
+      // 4) contorno de la tabla (borde propio de <table>, que cae dentro de su caja)
+      const tcs = getComputedStyle(table);
+      const bw = Math.max.apply(null, ['Top', 'Right', 'Bottom', 'Left'].map(function(sd) { return parseFloat(tcs['border' + sd + 'Width']) || 0; }));
+      if (bw > 0) {
+        ctx.strokeStyle = tcs.borderTopColor; ctx.lineWidth = bw; ctx.lineJoin = 'miter';
+        ctx.strokeRect(bw / 2, bw / 2, W - bw, H - bw);
+      }
       return canvas.toDataURL('image/jpeg', 0.88);
     } finally {
       if (mainWasHidden) main.classList.add('hidden');
@@ -6286,18 +6315,11 @@
   }
 
   document.addEventListener('click', function(e) {
-    const t = e.target.closest ? e.target.closest('#pillBackupBtn') : null;
+    const t = e.target.closest ? e.target.closest('.js-backup-btn') : null;
     if (t) quickBackupDownload({ currentTarget: t });
   });
 
   function bkRestore() {
-    if (!bkRestoreArmed) {
-      const b = document.getElementById('bkRestore');
-      b.textContent = '¿Seguro? Tocá de nuevo';
-      bkSetStatus('Se reemplazarán los datos actuales por los del texto.', true);
-      bkRestoreArmed = setTimeout(function() { bkDisarm(); }, 5000);
-      return;
-    }
     bkDisarm();
     let parsed = null;
     try { parsed = JSON.parse(document.getElementById('bkText').value); } catch (e) {}
@@ -7566,7 +7588,7 @@ function buildHistorialTable() {
 
   const ajustesModalEl = document.getElementById('ajustesModal');
   document.addEventListener('click', function(e) {
-    if (e.target.closest && e.target.closest('#ajustesBtn')) ajustesModalEl.classList.remove('hidden');
+    if (e.target.closest && e.target.closest('.js-ajustes-btn')) ajustesModalEl.classList.remove('hidden');
   });
   const ajustesCloseBtn = document.getElementById('ajustesClose');
   if (ajustesCloseBtn) ajustesCloseBtn.addEventListener('click', function() {
