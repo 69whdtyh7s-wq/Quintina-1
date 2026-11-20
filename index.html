@@ -131,11 +131,8 @@
     text-overflow: ellipsis;
   }
 
-  /* La última columna ("Tiros") queda debajo de la píldora fija de copia de
-     seguridad/ajustes en iPad: el texto se alinea a la izquierda de su
-     celda para que no quede tapado. */
-  th.title-cell.title-cell-last,
-  #mainPage th.title-cell.title-cell-last { text-align: left !important; padding-left: 35px !important; padding-right: 1px !important; }
+  /* La última casilla de la fila de títulos aloja los botones de copia de seguridad y ajustes. */
+  th.title-cell.title-cell-last { padding: 0 !important; }
 
   td.stat-cell {
     height: 32px;
@@ -868,7 +865,7 @@
   }
 
   /* Galería */
-  .galeria-toolbar { display: flex; justify-content: center; margin: 6px 0 12px; }
+  .galeria-toolbar { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px; }
   .galeria-add-btn { font-weight: 800; }
   .galeria-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; padding: 0 14px 24px; max-width: 900px; margin: 0 auto; }
   .galeria-card { position: relative; background: var(--paper); border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
@@ -903,25 +900,19 @@
   .galeria-comment-edit-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
   .modal-x { position: absolute; top: -6px; right: -6px; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--ink); background: var(--paper); color: var(--ink); font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; z-index: 2; }
 
-  #topActionsPill {
-    position: fixed;
-    top: max(8px, env(safe-area-inset-top));
-    right: max(8px, env(safe-area-inset-right));
-    z-index: 500;
+  .title-actions {
     display: flex;
-    align-items: center;
-    background: var(--paper);
-    border: 2px solid var(--ink);
-    border-radius: 999px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    overflow: hidden;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
   }
   .pill-icon-btn {
     font-family: inherit;
     background: transparent;
     border: none;
-    width: 40px;
-    height: 34px;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
     color: var(--ink);
     display: flex;
     align-items: center;
@@ -930,9 +921,10 @@
     touch-action: manipulation;
     padding: 0;
   }
-  .pill-icon-btn svg { width: 17px; height: 17px; }
+  .pill-icon-btn svg { width: calc(15px * var(--k, 1)); height: calc(15px * var(--k, 1)); }
+  .pill-icon-btn:active { background: rgba(0,0,0,0.12); }
   .pill-icon-btn.is-saved { background: var(--rec-green, #c3e3b8); }
-  .pill-icon-divider { width: 2px; align-self: stretch; margin: 6px 0; background: var(--ink); opacity: 0.25; }
+  .pill-icon-divider { width: 2px; align-self: stretch; margin: 3px 0; background: var(--ink); opacity: 0.25; }
   .ajustes-menu { display: flex; flex-direction: column; gap: 10px; }
 
   input.rec-edit-date {
@@ -1280,6 +1272,9 @@
     background: var(--paper) !important;
     border: none !important;
   }
+  .new-champ-label-text.champ-won-label { color: #a04a00; font-weight: 900; }
+  .new-champ-circle.champ-won-circle { background: #f0993e; color: #3a1f04; animation: champPulse 1.4s ease-in-out infinite; }
+  @keyframes champPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
   td.new-champ-label-cell {
     background: var(--paper) !important;
     border: none !important;
@@ -1478,6 +1473,11 @@
   .mpb-list { list-style: none; margin: 0 0 4px; padding: 0; font-size: 0.85rem; font-weight: 600; min-height: 1.2em; }
   .mpb-list li { line-height: 1.35; }
   .mpb-list .mpb-empty { font-weight: 500; opacity: 0.65; font-style: italic; }
+  .mpb-vergas { font-weight: 700; font-size: 0.85rem; margin: 0 0 4px; }
+  .last-game-sign { text-align: center; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em; color: #8a877d; opacity: 0.85; margin-top: 4px; pointer-events: none; }
+  .last-game-sign.hidden { display: none; }
+  #tablaPage .last-game-sign { position: fixed; left: 0; right: 0; bottom: 2px; margin: 0; z-index: 59; line-height: 1.1; }
+  #tablaPage .mpb-vergas { font-size: 0.74rem; margin-bottom: 3px; }
   .mpb-total { font-weight: 900; font-size: 1.05rem; border-top: 2px solid currentColor; padding-top: 5px; margin-top: 2px; }
 
   .edit-grid {
@@ -2668,11 +2668,13 @@
       <div class="mpb-col">
         <div class="mpb-player">Guido</div>
         <ul class="mpb-list" id="mpbListG"></ul>
+        <div class="mpb-vergas" id="mpbVergasG"></div>
         <div class="mpb-total" id="mpbTotalG"></div>
       </div>
       <div class="mpb-col">
         <div class="mpb-player">Martín</div>
         <ul class="mpb-list" id="mpbListM"></ul>
+        <div class="mpb-vergas" id="mpbVergasM"></div>
         <div class="mpb-total" id="mpbTotalM"></div>
       </div>
     </div>
@@ -2688,6 +2690,7 @@
       <div class="tally-num" id="tallyM">8</div>
     </div>
   </div>
+  <div class="last-game-sign hidden" id="lastGameSign"></div>
   </div>
 </div>
 
@@ -2702,6 +2705,7 @@
   </div>
   <div class="galeria-toolbar">
     <button type="button" class="pill-btn galeria-add-btn" id="galeriaAddBtn">+ Agregar foto o archivo</button>
+    <button type="button" class="pill-btn galeria-add-btn" id="galeriaCaptureBtn">Importar tablero actual</button>
     <input type="file" id="galeriaFileInput" accept="image/*,application/pdf" multiple style="display:none">
   </div>
   <div id="galeriaGrid" class="galeria-grid"></div>
@@ -2711,20 +2715,6 @@
   <div class="modal-card galeria-lightbox-card">
     <button type="button" class="modal-x" id="galeriaLightboxClose" aria-label="Cerrar">✕</button>
     <div id="galeriaLightboxImg"></div>
-  </div>
-</div>
-
-<div id="topActionsPill">
-  <button type="button" id="pillBackupBtn" class="pill-icon-btn" title="Descargar copia de seguridad" aria-label="Descargar copia de seguridad">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>
-      <path d="M17 21v-8H7v8"/>
-      <path d="M7 3v5h8"/>
-    </svg>
-  </button>
-  <div class="pill-icon-divider"></div>
-  <div id="ajustesBtn" class="pill-icon-btn" title="Ajustes" aria-label="Ajustes">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </div>
 </div>
 
@@ -2796,6 +2786,17 @@
     <div class="modal-btns">
       <button class="app-btn" id="modalCancel">Cancelar</button>
       <button class="app-btn" id="modalOk" style="background:var(--accent); color:var(--paper);">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div id="champModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <p id="champTitle" style="font-size: 1.25rem; font-weight: 900; margin-bottom: 8px;"></p>
+    <p id="champMsg"></p>
+    <div class="modal-btns">
+      <button class="app-btn" id="champLater">Más tarde</button>
+      <button class="app-btn" id="champNew" style="background:var(--accent); color:var(--paper);">Crear nuevo campeonato</button>
     </div>
   </div>
 </div>
@@ -2995,6 +2996,14 @@
           bar.appendChild(b);
         });
         th.appendChild(bar);
+      } else if (idx === BOARDS - 1) {
+        const acts = document.createElement('div');
+        acts.className = 'title-actions';
+        acts.innerHTML =
+          '<button type="button" id="pillBackupBtn" class="pill-icon-btn" title="Descargar copia de seguridad" aria-label="Descargar copia de seguridad">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>      <path d="M17 21v-8H7v8"/>      <path d="M7 3v5h8"/>    </svg>'+'</button>'+
+          '<div class="pill-icon-divider"></div>'+
+          '<button type="button" id="ajustesBtn" class="pill-icon-btn" title="Ajustes" aria-label="Ajustes">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'+'</button>';
+        th.appendChild(acts);
       } else {
         th.textContent = title;
       }
@@ -5360,6 +5369,108 @@
     });
   }
 
+
+  // Dibuja el tablero actual (pestaña Tablero) como imagen, leyendo el estilo real de cada casilla.
+  function captureBoardDataUrl() {
+    const main = document.getElementById('mainPage');
+    const others = ['recordsPage', 'tablaPage', 'galeriaPage'].map(function(id) { return document.getElementById(id); });
+    const mainWasHidden = main.classList.contains('hidden');
+    const othersState = others.map(function(el) { return el && el.classList.contains('hidden'); });
+    try {
+      main.classList.remove('hidden');
+      others.forEach(function(el) { if (el) el.classList.add('hidden'); });
+      const table = document.getElementById('quintinaTable');
+      const tr0 = table.getBoundingClientRect();
+      if (!tr0.width || !tr0.height) return null;
+      const SC = 2, PAD = 10;
+      const W = Math.ceil(tr0.width), H = Math.ceil(tr0.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = (W + PAD * 2) * SC; canvas.height = (H + PAD * 2) * SC;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(SC, SC);
+      ctx.fillStyle = getComputedStyle(document.body).backgroundColor || '#f5f0dc';
+      ctx.fillRect(0, 0, W + PAD * 2, H + PAD * 2);
+      ctx.translate(PAD, PAD);
+      const clear = function(c) { return !c || c === 'transparent' || /rgba\(.*,\s*0\)$/.test(c); };
+      const cells = Array.prototype.slice.call(table.querySelectorAll('th, td'));
+      const rectOf = function(el) {
+        const r = el.getBoundingClientRect();
+        return { x: r.left - tr0.left, y: r.top - tr0.top, w: r.width, h: r.height };
+      };
+      // 1) fondos
+      cells.forEach(function(c) {
+        const r = rectOf(c), cs = getComputedStyle(c);
+        if (!clear(cs.backgroundColor)) { ctx.fillStyle = cs.backgroundColor; ctx.fillRect(r.x, r.y, r.w, r.h); }
+        c.querySelectorAll('select').forEach(function(sel) {
+          const scs = getComputedStyle(sel);
+          if (!clear(scs.backgroundColor)) { const sr = rectOf(sel); ctx.fillStyle = scs.backgroundColor; ctx.fillRect(sr.x, sr.y, sr.w, sr.h); }
+        });
+      });
+      // 2) textos
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      cells.forEach(function(c) {
+        const r = rectOf(c);
+        const sel = c.querySelector('select');
+        let text = '', styleEl = c;
+        if (sel) {
+          const o = sel.options[sel.selectedIndex];
+          text = o ? (o.text || '') : '';
+          styleEl = sel;
+        } else if (!c.querySelector('button, svg')) {
+          text = (c.textContent || '').replace(/\s+/g, ' ').trim();
+        }
+        if (!text || text === '—' ) return;
+        const cs = getComputedStyle(styleEl);
+        ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+        ctx.fillStyle = cs.color;
+        ctx.fillText(text, r.x + r.w / 2, r.y + r.h / 2 + 1, r.w - 2);
+      });
+      // 3) bordes (los más finos primero, los gruesos encima)
+      const lines = [];
+      cells.forEach(function(c) {
+        const r = rectOf(c), cs = getComputedStyle(c);
+        [['Top', r.x, r.y, r.x + r.w, r.y], ['Bottom', r.x, r.y + r.h, r.x + r.w, r.y + r.h],
+         ['Left', r.x, r.y, r.x, r.y + r.h], ['Right', r.x + r.w, r.y, r.x + r.w, r.y + r.h]].forEach(function(e) {
+          const w = parseFloat(cs['border' + e[0] + 'Width']) || 0;
+          if (w > 0 && cs['border' + e[0] + 'Style'] !== 'none') lines.push({ w: w, col: cs['border' + e[0] + 'Color'], x1: e[1], y1: e[2], x2: e[3], y2: e[4] });
+        });
+      });
+      lines.sort(function(a, b) { return a.w - b.w; });
+      lines.forEach(function(l) {
+        ctx.strokeStyle = l.col; ctx.lineWidth = l.w; ctx.lineCap = 'butt';
+        ctx.beginPath(); ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); ctx.stroke();
+      });
+      return canvas.toDataURL('image/jpeg', 0.88);
+    } finally {
+      if (mainWasHidden) main.classList.add('hidden');
+      others.forEach(function(el, i) { if (el && !othersState[i]) el.classList.remove('hidden'); });
+    }
+  }
+
+  function importBoardCaptureToGaleria() {
+    let dataUrl = null;
+    try { dataUrl = captureBoardDataUrl(); } catch (e) { dataUrl = null; }
+    if (!dataUrl) { alert('No se pudo capturar el tablero.'); return; }
+    const item = {
+      id: 'g' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      type: 'image',
+      name: 'Tablero ' + galeriaFormatDate(),
+      mime: 'image/jpeg',
+      dataUrl: dataUrl,
+      addedDate: galeriaFormatDate(),
+      comments: []
+    };
+    galeriaItems.push(item);
+    try {
+      localStorage.setItem(GALERIA_KEY, JSON.stringify(galeriaItems));
+    } catch (e) {
+      galeriaItems.pop();
+      alert('No hay espacio suficiente para guardar la captura. Elimina alguna foto de la galería e inténtalo de nuevo.');
+      return;
+    }
+    renderGaleriaGrid();
+  }
+
   function galeriaFileIcon(item) {
     const mime = item.mime || '';
     if (mime === 'application/pdf') return '📄';
@@ -5984,7 +6095,8 @@
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
   // --- Copia de seguridad (botón Guardar en Records y Campeonatos) ---
-  const BACKUP_KEYS = ['quintina_records_data', 'quintina_historial_state', 'quintina_paliza_comments', 'quintina_single_rec_comments', 'quintina_speed_records', 'quintina_hide_fechas', 'quintina_gallery', 'quintina_theme'];
+  const LAST_GAME_KEY = 'quintina_last_game_date';
+  const BACKUP_KEYS = ['quintina_records_data', 'quintina_historial_state', 'quintina_paliza_comments', 'quintina_single_rec_comments', 'quintina_speed_records', 'quintina_hide_fechas', 'quintina_gallery', 'quintina_theme', 'quintina_last_game_date'];
 
   function buildBackupText() {
     try { saveRecordsData(); } catch (e) {}
@@ -6173,8 +6285,10 @@
     } catch (e) {}
   }
 
-  const pillBackupBtnEl = document.getElementById('pillBackupBtn');
-  if (pillBackupBtnEl) pillBackupBtnEl.addEventListener('click', quickBackupDownload);
+  document.addEventListener('click', function(e) {
+    const t = e.target.closest ? e.target.closest('#pillBackupBtn') : null;
+    if (t) quickBackupDownload({ currentTarget: t });
+  });
 
   function bkRestore() {
     if (!bkRestoreArmed) {
@@ -6263,6 +6377,42 @@
     try {
       localStorage.setItem('quintina_historial_state', JSON.stringify({ rows: HISTORIAL, currentRowIndex: currentRowIndex }));
     } catch(e) {}
+  }
+
+  // Un campeonato lo gana quien llega a 100 puntos o más y supera al rival
+  // (misma regla que usa el contador de campeonatos ganados).
+  function getChampionshipWinner(row) {
+    if (!row) return null;
+    const pg = row.g.pts || 0, pm = row.m.pts || 0;
+    if (pg >= 100 && pg > pm) return 'g';
+    if (pm >= 100 && pm > pg) return 'm';
+    return null;
+  }
+
+  function showChampionModal(winner, row, blocked) {
+    const modal = document.getElementById('champModal');
+    if (!modal) return;
+    const name = winner === 'g' ? 'Guido' : 'Martín';
+    const win = winner === 'g' ? row.g.pts : row.m.pts;
+    const lose = winner === 'g' ? row.m.pts : row.g.pts;
+    const nextNum = HISTORIAL.length + 1;
+    document.getElementById('champTitle').textContent = blocked
+      ? 'El campeonato ya está cerrado'
+      : '¡' + name + ' ganó el campeonato!';
+    document.getElementById('champMsg').textContent = blocked
+      ? 'Ya lo ganó ' + name + ' (' + win + ' a ' + lose + '), así que no se pueden sumar más puntos. ¿Crear un nuevo campeonato? Este partido y los siguientes se cargarán en la fila ' + nextNum + '.'
+      : 'Llegó a ' + win + ' puntos (' + win + ' a ' + lose + '), por lo que este campeonato queda cerrado y no se pueden sumar más puntos. ¿Crear un nuevo campeonato? Los próximos partidos se cargarán en la fila ' + nextNum + '.';
+    modal.classList.remove('hidden');
+    const close = function() {
+      modal.classList.add('hidden');
+      document.getElementById('champNew').onclick = null;
+      document.getElementById('champLater').onclick = null;
+    };
+    document.getElementById('champLater').onclick = close;
+    document.getElementById('champNew').onclick = function() {
+      close();
+      startNewChampionship();
+    };
   }
 
   function startNewChampionship() {
@@ -6356,6 +6506,7 @@
 function buildHistorialTable() {
     const t = document.getElementById('historialTable');
     t.innerHTML = '';
+    renderLastGameSign();
 
     const headRow1 = document.createElement('tr');
     headRow1.innerHTML =
@@ -6498,9 +6649,13 @@ function buildHistorialTable() {
     addRowTr.className = 'add-champ-row';
     const nextNum = HISTORIAL.length + 1;
     const undoNewChampHtml = canUndoNewChampionship() ? ' <button type="button" class="new-champ-undo-btn" onclick="undoOrDeleteNewChampionship()">Deshacer nuevo campeonato</button>' : '';
+    const curWinner = getChampionshipWinner(HISTORIAL[currentRowIndex]);
+    const labelText = curWinner
+      ? 'Ganó ' + (curWinner === 'g' ? 'Guido' : 'Martín') + ' · crear nuevo campeonato — fila ' + nextNum
+      : 'Nuevo campeonato — fila ' + nextNum;
     addRowTr.innerHTML =
-      '<td class="pos new-champ-pos"><button class="new-champ-circle" onclick="startNewChampionship()" title="Nuevo campeonato">+</button></td>' +
-      '<td colspan="16" class="new-champ-label-cell"><span class="new-champ-label-text">Nuevo campeonato — fila ' + nextNum + '</span>' + undoNewChampHtml + '</td>' +
+      '<td class="pos new-champ-pos"><button class="new-champ-circle' + (curWinner ? ' champ-won-circle' : '') + '" onclick="startNewChampionship()" title="Nuevo campeonato">+</button></td>' +
+      '<td colspan="16" class="new-champ-label-cell"><span class="new-champ-label-text' + (curWinner ? ' champ-won-label' : '') + '">' + labelText + '</span>' + undoNewChampHtml + '</td>' +
       '<td colspan="3" class="new-champ-label-cell col-fechas"></td>';
     t.appendChild(addRowTr);
 
@@ -6777,11 +6932,17 @@ function buildHistorialTable() {
   }
 
   function finishCurrentGameAndAccumulate() {
+    const alreadyWinner = getChampionshipWinner(HISTORIAL[currentRowIndex]);
+    if (alreadyWinner) {
+      showChampionModal(alreadyWinner, HISTORIAL[currentRowIndex], true);
+      return;
+    }
     newChampSnapshot = null; // una sola acción deshacible a la vez
     finishSnapshot = {
       boardState: JSON.parse(JSON.stringify(getFullState())),
       rowIndex: currentRowIndex,
       row15: JSON.parse(JSON.stringify(HISTORIAL[currentRowIndex])),
+      lastGameDate: (function() { try { return localStorage.getItem(LAST_GAME_KEY); } catch (e) { return null; } })(),
       vergasRow: JSON.parse(JSON.stringify(findRecordRowById('vergas_en_un_partido') || {})),
       vergasSeguidasRow: JSON.parse(JSON.stringify(findRecordRowById('vergas_seguidas') || {})),
       borresRow: JSON.parse(JSON.stringify(findRecordRowById('borres_en_un_partido') || {})),
@@ -6879,6 +7040,8 @@ function buildHistorialTable() {
 
     row15.jugados += 1;
 
+    try { localStorage.setItem(LAST_GAME_KEY, new Date().toISOString()); } catch (e) {}
+
     saveRow15State();
 
     // Desglose de los puntos de campeonato que ganó CADA jugador con este
@@ -6898,6 +7061,8 @@ function buildHistorialTable() {
     }
     const breakdownG = computeMatchPointsDelta(prevPgG, prevQG, prevDG, row15.g);
     const breakdownM = computeMatchPointsDelta(prevPgM, prevQM, prevDM, row15.m);
+    breakdownG.vergas = game.g.v || 0;
+    breakdownM.vergas = game.m.v || 0;
     showMatchPointsBox(gameWinner, breakdownG, breakdownM, {
       before: JSON.parse(JSON.stringify(finishSnapshot.row15)),
       after: JSON.parse(JSON.stringify(row15))
@@ -6909,6 +7074,8 @@ function buildHistorialTable() {
     updateUndoFinishBtn();
     suppressKeyboardAfterFinish();
     showTablaPage();
+    const newChampWinner = getChampionshipWinner(row15);
+    if (newChampWinner) showChampionModal(newChampWinner, row15, false);
   }
 
   // Al tocar "Terminar" → "Aceptar", el tablero desaparece y aparece la
@@ -7024,6 +7191,16 @@ function buildHistorialTable() {
       }).join('');
     } else {
       listEl.innerHTML = '<li class="mpb-empty">Sin puntos</li>';
+    }
+    const vergasEl = document.getElementById(elTotalId.replace('mpbTotal', 'mpbVergas'));
+    if (vergasEl) {
+      if (typeof breakdown.vergas === 'number') {
+        vergasEl.textContent = 'Vergas: ' + breakdown.vergas;
+        vergasEl.classList.remove('hidden');
+      } else {
+        vergasEl.textContent = '';
+        vergasEl.classList.add('hidden');
+      }
     }
     totalEl.textContent = 'Total: +' + breakdown.total + (breakdown.total === 1 ? ' punto' : ' puntos');
   }
@@ -7145,12 +7322,29 @@ function buildHistorialTable() {
     });
   }
 
+  function renderLastGameSign() {
+    const el = document.getElementById('lastGameSign');
+    if (!el) return;
+    let iso = null;
+    try { iso = localStorage.getItem(LAST_GAME_KEY); } catch (e) {}
+    const d = iso ? new Date(iso) : null;
+    if (!d || isNaN(d.getTime())) { el.classList.add('hidden'); el.textContent = ''; return; }
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    el.textContent = 'Último partido: ' + dd + '/' + mm + '/' + d.getFullYear();
+    el.classList.remove('hidden');
+  }
+
   function undoFinishGame() {
     if (!finishSnapshot) return;
     showConfirmModal('¿Deshacer la última partida terminada? Se va a restaurar el tablero tal como estaba y se revertirán los récords y estadísticas guardadas.', function() {
       const snap = finishSnapshot;
       finishSnapshot = null;
 
+      try {
+        if (snap.lastGameDate) localStorage.setItem(LAST_GAME_KEY, snap.lastGameDate);
+        else localStorage.removeItem(LAST_GAME_KEY);
+      } catch (e) {}
       HISTORIAL[snap.rowIndex] = snap.row15;
       currentRowIndex = snap.rowIndex;
       saveRow15State();
@@ -7248,6 +7442,8 @@ function buildHistorialTable() {
   });
 
   document.getElementById('finishGame').addEventListener('click', function() {
+    const wonBy = getChampionshipWinner(HISTORIAL[currentRowIndex]);
+    if (wonBy) { showChampionModal(wonBy, HISTORIAL[currentRowIndex], true); return; }
     showConfirmModal('¿Terminar la partida? Se van a guardar las estadísticas acumuladas en la Tabla y Records, y se limpiará el tablero.', function() {
       finishCurrentGameAndAccumulate();
     });
@@ -7341,6 +7537,8 @@ function buildHistorialTable() {
     document.getElementById('galeriaFileInput').click();
   });
 
+  document.getElementById('galeriaCaptureBtn').addEventListener('click', importBoardCaptureToGaleria);
+
   document.getElementById('galeriaFileInput').addEventListener('change', function(e) {
     handleGaleriaFiles(e.target.files);
     e.target.value = '';
@@ -7366,10 +7564,9 @@ function buildHistorialTable() {
     if (e.target.id === 'confirmModal') document.getElementById('modalCancel').click();
   });
 
-  const ajustesBtnEl = document.getElementById('ajustesBtn');
   const ajustesModalEl = document.getElementById('ajustesModal');
-  if (ajustesBtnEl) ajustesBtnEl.addEventListener('click', function() {
-    ajustesModalEl.classList.remove('hidden');
+  document.addEventListener('click', function(e) {
+    if (e.target.closest && e.target.closest('#ajustesBtn')) ajustesModalEl.classList.remove('hidden');
   });
   const ajustesCloseBtn = document.getElementById('ajustesClose');
   if (ajustesCloseBtn) ajustesCloseBtn.addEventListener('click', function() {
